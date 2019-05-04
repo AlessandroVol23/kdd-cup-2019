@@ -17,6 +17,8 @@ Project Organization
     │
     ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
     │
+    ├── environments       <- Folder for all different conda environments e.g. PyTorch, TFRanking, Light-GBM
+    │    
     ├── models             <- Trained and serialized models, model predictions, or model summaries
     │
     ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
