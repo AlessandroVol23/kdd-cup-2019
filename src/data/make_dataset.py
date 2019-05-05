@@ -5,17 +5,25 @@ from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 import pandas as pd
 import numpy as np
+import os
 
 # Initialize logger
 logger = logging.getLogger(__name__)
 
 
-def read_in_data():
+def read_in_data(relative_raw_data_path):
     """
         This function reads in all the data sets.
         returns: df_train_queries, df_train_plans, df_train_clicks, df_test_queries, df_test_queries, df_test_plans, df_profiles
     """
     # TODO: Unit test if shape is original shape
+
+    # Concat paths
+    dirname = os.path.dirname(__file__)
+    print(dirname)
+    return null
+    filename = os.path.join(dirname, relative_raw_data_path)
+
     df_profiles = pd.read_csv("../data/raw/data_set_phase1/profiles.csv")
     df_train_clicks = pd.read_csv(
         "../data/raw/data_set_phase1/train_clicks.csv")
@@ -70,7 +78,6 @@ def main(input_filepath, output_filepath):
     # TODO: Unit test to check if shape is the same afterwards
 
     # TODO: Clean data
-    
 
 
 if __name__ == '__main__':
