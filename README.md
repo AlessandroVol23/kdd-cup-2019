@@ -4,13 +4,14 @@ This is the repository for the Big Data Science practical course @ LMU.
 
 ## Data Preprocessing
 
-In ./src/data you'll find the ``make_dataset.py``script. This script takes the files from the input parameter and creates one concatted and joined file with which you can train your ML model. 
+In ./src/data you'll find the ``make_dataset.py`` script. This script takes the files from the input parameter and creates one concatenated and joined file with which you can train your ML model. 
 
 __1. Create conda environment__
 
-In ``./environments/``you'll find the yml file ``preprocessing_kdd.yml``. 
+In ``./environments/`` you'll find the yml file ``preprocessing_kdd.yml``. 
 
 Create a new conda env with:
+
 ```shell
 conda env create -f ./environments/preprocessing_kdd.yml
 ```
@@ -27,10 +28,10 @@ __3. Execute preprocessing script__
 python ./src/data/make_dataset.py <ABSOLUTE_PATH_TO_RAW_FOLDER> <ABSOLUTE_PATH_TO_TARGET_FILE>
 ```
 
-After executing the script you see some output, wait till it says Preprocessing Done!
+After executing the script you see some output, wait until it says "Preprocessing Done!"
 
 
-A short description of the project.
+A short description of the project:
 
 Project Organization
 ------------
