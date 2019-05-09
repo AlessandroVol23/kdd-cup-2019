@@ -52,7 +52,7 @@ def read_in_data(absolute_raw_data_path, all_datasets, train_set_only, test_set_
             df_test_queries,
             df_test_plans,
         )
-    else if train_set_only:
+    elif train_set_only:
         df_profiles = pd.read_csv(os.path.join(data_set_path, "profiles.csv"))
         df_clicks = pd.read_csv(os.path.join(
             data_set_path, "train_clicks.csv"))
@@ -64,7 +64,7 @@ def read_in_data(absolute_raw_data_path, all_datasets, train_set_only, test_set_
         return (
             df_profiles, df_clicks, df_train_plans, df_train_queries
         )
-    else if test_set_only:
+    elif test_set_only:
         df_profiles = pd.read_csv(os.path.join(data_set_path, "profiles.csv"))
         df_clicks = pd.read_csv(os.path.join(
             data_set_path, "train_clicks.csv"))
@@ -201,9 +201,16 @@ def fill_missing_price(df, median=True, mean=False):
     return df
 
 
+def str2bool(v):
+    return v.lower() in ("True")
+
+
 @click.command()
 @click.argument("absolute_path_raw_folder")
 @click.argument("output_file")
+@click.argument("all_datasets")
+@click.argument("train_set_only")
+@click.argument("test_set_only")
 def main(absolute_path_raw_folder, output_file, all_datasets=True, train_set_only=False, test_set_only=False):
     """ 
         Script to construct dataset.
@@ -212,7 +219,15 @@ def main(absolute_path_raw_folder, output_file, all_datasets=True, train_set_onl
         output_file: Path to output file. Typically /home/xxx/repo/data/processed/df_features.pickle
     """
     logger.info("making final data set from raw data")
+    logger.info("all_datasets %s", str(all_datasets))
+    logger.info("train_set_only %s", str(train_set_only))
+    logger.info("test_set_only %s", str(test_set_only))
     # Should we concat all data sets? -> Parameter if we concat it or not
+
+    logger.info("String to Boolean")
+    all_datasets = str2bool(all_datasets)
+    train_set_only = str2bool(train_set_only)
+    test_set_only = str2bool(all_datasets)
 
     logger.info("Filepath to raw folder is %s", absolute_path_raw_folder)
     logger.info("Filepath to processed folder is %s", output_file)
@@ -220,22 +235,25 @@ def main(absolute_path_raw_folder, output_file, all_datasets=True, train_set_onl
     # Read in data
     logger.info("Start reading in data...")
 
-    if all_datasets:
+    if all_datasets == True:
+        logger.info("Read in all datasets")
         df_profiles, df_clicks, df_train_plans, df_train_queries, df_test_queries, df_test_plans = read_in_data(
             absolute_path_raw_folder, all_datasets, train_set_only, test_set_only
         )
-    else if train_set_only:
+    elif train_set_only == True:
+        logger.info("Read in trainset only")
         df_profiles, df_clicks, df_plans, df_queries = read_in_data(
             absolute_path_raw_folder, all_datasets, train_set_only, test_set_only
         )
-    else if test_set_only:
+    elif test_set_only == True:
+        logger.info("Read in test set only")
         df_profiles, df_clicks, df_plans, df_queries = read_in_data(
             absolute_path_raw_folder, all_datasets, train_set_only, test_set_only
         )
 
     # Concat data
-    logger.info("Start concating data...")
     if all_datasets:
+        logger.info("Start concating data...")
         df_plans, df_queries = concat_data(
             df_train_plans, df_train_queries, df_test_queries, df_test_plans
         )
