@@ -32,18 +32,13 @@ def read_in_data(absolute_raw_data_path, all_datasets, train_set_only, test_set_
     data_set_path = raw_dir
     # data_set_path = os.path.join(raw_dir, "data_set_phase1")
 
-    if all_datasets:
+    if all_datasets == True:
         df_profiles = pd.read_csv(os.path.join(data_set_path, "profiles.csv"))
-        df_clicks = pd.read_csv(os.path.join(
-            data_set_path, "train_clicks.csv"))
-        df_train_plans = pd.read_csv(
-            os.path.join(data_set_path, "train_plans.csv"))
-        df_train_queries = pd.read_csv(
-            os.path.join(data_set_path, "train_queries.csv"))
-        df_test_queries = pd.read_csv(
-            os.path.join(data_set_path, "test_queries.csv"))
-        df_test_plans = pd.read_csv(
-            os.path.join(data_set_path, "test_plans.csv"))
+        df_clicks = pd.read_csv(os.path.join(data_set_path, "train_clicks.csv"))
+        df_train_plans = pd.read_csv(os.path.join(data_set_path, "train_plans.csv"))
+        df_train_queries = pd.read_csv(os.path.join(data_set_path, "train_queries.csv"))
+        df_test_queries = pd.read_csv(os.path.join(data_set_path, "test_queries.csv"))
+        df_test_plans = pd.read_csv(os.path.join(data_set_path, "test_plans.csv"))
         return (
             df_profiles,
             df_clicks,
@@ -52,30 +47,20 @@ def read_in_data(absolute_raw_data_path, all_datasets, train_set_only, test_set_
             df_test_queries,
             df_test_plans,
         )
-    elif train_set_only:
+    elif train_set_only == True:
         df_profiles = pd.read_csv(os.path.join(data_set_path, "profiles.csv"))
-        df_clicks = pd.read_csv(os.path.join(
-            data_set_path, "train_clicks.csv"))
-        df_train_plans = pd.read_csv(
-            os.path.join(data_set_path, "train_plans.csv"))
-        df_train_queries = pd.read_csv(
-            os.path.join(data_set_path, "train_queries.csv"))
+        df_clicks = pd.read_csv(os.path.join(data_set_path, "train_clicks.csv"))
+        df_train_plans = pd.read_csv(os.path.join(data_set_path, "train_plans.csv"))
+        df_train_queries = pd.read_csv(os.path.join(data_set_path, "train_queries.csv"))
 
-        return (
-            df_profiles, df_clicks, df_train_plans, df_train_queries
-        )
-    elif test_set_only:
+        return (df_profiles, df_clicks, df_train_plans, df_train_queries)
+    elif test_set_only == True:
         df_profiles = pd.read_csv(os.path.join(data_set_path, "profiles.csv"))
-        df_clicks = pd.read_csv(os.path.join(
-            data_set_path, "train_clicks.csv"))
-        df_test_queries = pd.read_csv(
-            os.path.join(data_set_path, "test_queries.csv"))
-        df_test_plans = pd.read_csv(
-            os.path.join(data_set_path, "test_plans.csv"))
+        df_clicks = pd.read_csv(os.path.join(data_set_path, "train_clicks.csv"))
+        df_test_queries = pd.read_csv(os.path.join(data_set_path, "test_queries.csv"))
+        df_test_plans = pd.read_csv(os.path.join(data_set_path, "test_plans.csv"))
 
-        return (
-            df_profiles, df_clicks, df_test_queries, df_test_plans
-        )
+        return (df_profiles, df_clicks, df_test_queries, df_test_plans)
 
 
 def concat_data(df_train_plans, df_train_queries, df_test_queries, df_test_plans):
@@ -128,8 +113,7 @@ def unstack_plans(df_plans):
         axis=1,
     )
 
-    df_unstacked = json_normalize(
-        df.plans.values, "plans", ["sid", "plan_time"])
+    df_unstacked = json_normalize(df.plans.values, "plans", ["sid", "plan_time"])
     df_unstacked.rename({"distance": "distance_plan"}, axis=1, inplace=True)
     return df_unstacked
 
@@ -138,8 +122,7 @@ def calculate_distance(df):
     df = df.assign(
         distance_query=(
             df.apply(
-                lambda x: (distance([x.o_lat, x.o_long],
-                                    [x.d_lat, x.d_long]).km),
+                lambda x: (distance([x.o_lat, x.o_long], [x.d_lat, x.d_long]).km),
                 axis=1,
             )
         )
@@ -180,6 +163,9 @@ def join_data_sets(df_plans, df_clicks, df_queries):
     """
 
     df = pd.merge(df_clicks, df_plans, on="sid")
+
+    if df.empty:
+        df = df_plans.copy()
     df = pd.merge(df, df_queries, on="sid")
 
     return df
@@ -201,8 +187,17 @@ def fill_missing_price(df, median=True, mean=False):
     return df
 
 
-def str2bool(v):
-    return v.lower() in ("True")
+def str2bool(string):
+    string = str(string)
+    return string.lower() in ("true")
+
+
+def transform_params_to_boolean(all_datasets, train_set_only, test_set_only):
+    all_datasets = str2bool(all_datasets)
+    train_set_only = str2bool(train_set_only)
+    test_set_only = str2bool(test_set_only)
+
+    return all_datasets, train_set_only, test_set_only
 
 
 @click.command()
@@ -211,23 +206,35 @@ def str2bool(v):
 @click.argument("all_datasets")
 @click.argument("train_set_only")
 @click.argument("test_set_only")
-def main(absolute_path_raw_folder, output_file, all_datasets=True, train_set_only=False, test_set_only=False):
+def main(
+    absolute_path_raw_folder,
+    output_file,
+    all_datasets=True,
+    train_set_only=False,
+    test_set_only=False,
+):
     """ 
         Script to construct dataset.
         Script looks in absolut_path_raw_folder for profiles.csv, train_clicks.csv, train_plans.csv, train_queries.csv, test_queries.csv, test_plans.csv. File will be saved as .pickle file.
         absolute_path_raw_folder: Path to raw data folder. Typically /home/xxx/repo/data/raw
         output_file: Path to output file. Typically /home/xxx/repo/data/processed/df_features.pickle
     """
+    # TODO: Validation of input parameters
     logger.info("making final data set from raw data")
     logger.info("all_datasets %s", str(all_datasets))
     logger.info("train_set_only %s", str(train_set_only))
     logger.info("test_set_only %s", str(test_set_only))
     # Should we concat all data sets? -> Parameter if we concat it or not
 
+    # Transform all input params too boolean
     logger.info("String to Boolean")
-    all_datasets = str2bool(all_datasets)
-    train_set_only = str2bool(train_set_only)
-    test_set_only = str2bool(all_datasets)
+    all_datasets, train_set_only, test_set_only = transform_params_to_boolean(
+        all_datasets, train_set_only, test_set_only
+    )
+
+    # all_datasets = str2bool(all_datasets)
+    # train_set_only = str2bool(train_set_only)
+    # test_set_only = str2bool(all_datasets)
 
     logger.info("Filepath to raw folder is %s", absolute_path_raw_folder)
     logger.info("Filepath to processed folder is %s", output_file)
@@ -240,6 +247,12 @@ def main(absolute_path_raw_folder, output_file, all_datasets=True, train_set_onl
         df_profiles, df_clicks, df_train_plans, df_train_queries, df_test_queries, df_test_plans = read_in_data(
             absolute_path_raw_folder, all_datasets, train_set_only, test_set_only
         )
+
+        # Concat data
+        logger.info("Start concating data...")
+        df_plans, df_queries = concat_data(
+            df_train_plans, df_train_queries, df_test_queries, df_test_plans
+        )
     elif train_set_only == True:
         logger.info("Read in trainset only")
         df_profiles, df_clicks, df_plans, df_queries = read_in_data(
@@ -247,16 +260,10 @@ def main(absolute_path_raw_folder, output_file, all_datasets=True, train_set_onl
         )
     elif test_set_only == True:
         logger.info("Read in test set only")
-        df_profiles, df_clicks, df_plans, df_queries = read_in_data(
+        df_profiles, df_clicks, df_queries, df_plans = read_in_data(
             absolute_path_raw_folder, all_datasets, train_set_only, test_set_only
         )
 
-    # Concat data
-    if all_datasets:
-        logger.info("Start concating data...")
-        df_plans, df_queries = concat_data(
-            df_train_plans, df_train_queries, df_test_queries, df_test_plans
-        )
     # TODO: Unit test to check if shape is the same afterwards
 
     # Preprocess lat / long
