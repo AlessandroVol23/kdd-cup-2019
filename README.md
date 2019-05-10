@@ -25,7 +25,7 @@ conda activate preprocessing_kdd
 __3. Execute preprocessing script__
 
 ```shell
-python ./src/data/make_dataset.py /path/to/kdd-cup-2019/data/raw/ /path/to/kdd-cup-2019/data/processed/YOUR_FILE.pickle
+python ./src/data/make_dataset.py /path/to/kdd-cup-2019/data/raw/ /path/to/kdd-cup-2019/data/processed/YOUR_FILE.pickle TRAIN_OR_TEST
 ```
 
 After executing the script you see some output, wait until it says "Preprocessing Done!"
