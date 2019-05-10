@@ -1,4 +1,4 @@
-name: pp2
+name: preprocessing_kdd
 channels:
   - defaults
 dependencies:
