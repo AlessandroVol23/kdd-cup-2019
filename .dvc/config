@@ -1,2 +1,4 @@
 ['remote "myremote"']
 url = ssh://ubuntu@138.246.232.191/home/ubuntu/dvc
+['remote "origin"']
+url = ssh://ubuntu@138.246.232.191/home/ubuntu/dvc
