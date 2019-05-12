@@ -1,7 +1,37 @@
 kdd-cup-2019
 ==============================
+This is the repository for the Big Data Science practical course @ LMU.
 
-A short description of the project.
+## Data Preprocessing
+
+In ./src/data you'll find the ``make_dataset.py`` script. This script takes the files from the input parameter and creates one concatenated and joined file with which you can train your ML model. 
+
+__1. Create conda environment__
+
+In ``./environments/`` you'll find the yml file ``preprocessing_kdd.yml``. 
+
+Create a new conda env with:
+
+```shell
+conda env create -f ./environments/preprocessing_kdd.yml
+```
+
+__2. Activate conda environment__
+
+```shell
+conda activate preprocessing_kdd
+```
+
+__3. Execute preprocessing script__
+
+```shell
+python ./src/data/make_dataset.py /path/to/kdd-cup-2019/data/raw/ /path/to/kdd-cup-2019/data/processed/YOUR_FILE.pickle TRAIN_OR_TEST
+```
+
+After executing the script you see some output, wait until it says "Preprocessing Done!"
+
+
+A short description of the project:
 
 Project Organization
 ------------

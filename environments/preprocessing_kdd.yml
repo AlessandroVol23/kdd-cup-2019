@@ -1,0 +1,32 @@
+name: preprocessing_kdd
+channels:
+  - defaults
+dependencies:
+  - blas
+  - ca-certificates
+  - certifi
+  - click
+  - intel-openmp
+  - mkl
+  - mkl_fft
+  - numpy
+  - numpy-base
+  - openssl
+  - pandas
+  - pip
+  - python
+  - python-dateutil
+  - pytz
+  - setuptools
+  - six
+  - sqlite
+  - tk
+  - wheel
+  - xz
+  - zlib
+  - pip:
+    - geographiclib==1.49
+    - geopy==1.19.0
+    - python-dotenv==0.10.1
+prefix: /home/sandro/anaconda3/envs/pp2
+
