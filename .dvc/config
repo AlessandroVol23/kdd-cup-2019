@@ -1,0 +1,4 @@
+['remote "sshcache"']
+url = ssh://ubuntu@138.246.232.191:/home/ubuntu/dvc_ssh
+[cache]
+ssh = sshcache
