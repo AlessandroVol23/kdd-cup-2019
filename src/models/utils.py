@@ -26,3 +26,30 @@ def create_query_file(df_r):
     query = sid_diff.difference.values
 
     return query
+
+
+def save_model(model, file_path):
+    """
+        This function saves the model in file_path as a pickle file.
+        model: Model to save
+        file_path: Path (relative or absolute) to save the model.
+        It is just allowed to save models in the model folder!
+        returns: nothing
+    """
+    import pickle
+    import os
+    if "models" not in file_path:
+        raise ValueError("It is just allowed to save models in the models folder!")
+    print("Save model...")
+    path = os.path.join(file_path)
+    pickle.dump(model, open(path, 'wb'))
+    print("Model was saved at {}".format(path))
+    print("Don't forget to add your model in DVC with dvc and git workflow!")
+    
+    
+def load_model(file_path):
+    import pickle
+    print("Load model...")
+    loaded_model = pickle.load(open(file_path, 'rb'))
+    print("Model was loaded!")
+    return loaded_model
