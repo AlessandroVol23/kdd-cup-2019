@@ -113,6 +113,9 @@ forest = sklearn.ensemble.RandomForestClassifier(criterion='entropy',
 forest_1_res = []
 for i in range(len(SIDs)):
 	
+	# print process
+	print(str(i) + " / " + str(len(SIDs)))
+	
 	# Extract the Test_Set based on the SIDs:
 	current_test          = df_train.loc[df_train["SID"].isin(SIDs[i]), feature_names]
 	current_test_response = df_train.loc[df_train["SID"].isin(SIDs[i]), "Response"] 
@@ -140,6 +143,9 @@ forest2 = sklearn.ensemble.RandomForestClassifier(criterion='entropy',
 forest_2_res = []
 for i in range(len(SIDs)):
 	
+	# print process
+	print(str(i) + " / " + str(len(SIDs)))
+	
 	# Extract the Test_Set based on the SIDs:
 	current_test          = df_train.loc[df_train["SID"].isin(SIDs[i]), feature_names]
 	current_test_response = df_train.loc[df_train["SID"].isin(SIDs[i]), "Response"] 
@@ -157,8 +163,24 @@ for i in range(len(SIDs)):
 	forest_2_res.append(sklearn.metrics.f1_score(current_test_response, 
 						                         forest2.predict(current_test),
 									             average="weighted"))
+	
+forest2.fit(df_train[feature_names], df_train["Response"])
+y_preds = forest2.predict(df_test[feature_names])
+
+a = pd.Series(df_test["SID"])
+b = pd.Series(y_preds)
+submission = pd.DataFrame(data={'sid':a.values, 'yhat':b.values})
+
+import calendar
+import time
+ts = calendar.timegm(time.gmtime())
+
+submission.to_csv("submissions/sub_RF" + str(ts) + ".csv", index=None, header=None)
+
+
 
 # [3] NN ----------------------------------------------------------------------
+print("nn")
 # for NN scale the features 
 scaler = StandardScaler()
 
@@ -167,6 +189,8 @@ mlp = MLPClassifier(hidden_layer_sizes=(40, 40, 30))
 
 MLP_res = []
 for i in range(len(SIDs)):
+	
+	print(str(i) + " / " + str(len(SIDs)))
 	
 	# Extract the Test_Set based on the SIDs:
 	current_test          = df_train.loc[df_train["SID"].isin(SIDs[i]), feature_names]
@@ -194,6 +218,35 @@ for i in range(len(SIDs)):
 	MLP_res.append(sklearn.metrics.f1_score(current_test_response, 
 										    mlp.predict(scaled_current_test),
 									        average="weighted"))
+	
+
+
+# Split the data:
+train__         = df_train[feature_names]
+train__response = df_train["Response"]
+
+# Scale the features:
+scaler.fit(train__)
+scaled_train__ = scaler.transform(train__)
+
+# Scale the TestFeatures!
+test_features__ = df_test[feature_names]
+scaler.fit(test_features__)
+scaled_test_features__ = scaler.transform(test_features__st)
+
+mlp.fit(scaled_train__, train__response)
+y_preds = mlp.predict(scaled_test_features__)
+
+a = pd.Series(df_test["SID"])
+b = pd.Series(y_preds)
+submission = pd.DataFrame(data={'sid':a.values, 'yhat':b.values})
+
+import calendar
+import time
+ts = calendar.timegm(time.gmtime())
+
+submission.to_csv("submissions/sub_" + str(ts) + ".csv", index=None, header=None, )
+
 
 
 # Define NN 2 -----------------------------------------------------------------
@@ -201,6 +254,9 @@ mlp2 = MLPClassifier(hidden_layer_sizes=(50, 40, 30, 20))
 
 MLP_res2 = []
 for i in range(len(SIDs)):
+	
+	
+	print(str(i) + " / " + str(len(SIDs)))
 	
 	# Extract the Test_Set based on the SIDs:
 	current_test          = df_train.loc[df_train["SID"].isin(SIDs[i]), feature_names]
