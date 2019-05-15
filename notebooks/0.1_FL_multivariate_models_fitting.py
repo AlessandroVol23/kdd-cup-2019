@@ -232,7 +232,7 @@ scaled_train__ = scaler.transform(train__)
 # Scale the TestFeatures!
 test_features__ = df_test[feature_names]
 scaler.fit(test_features__)
-scaled_test_features__ = scaler.transform(test_features__st)
+scaled_test_features__ = scaler.transform(test_features__)
 
 mlp.fit(scaled_train__, train__response)
 y_preds = mlp.predict(scaled_test_features__)
@@ -245,7 +245,7 @@ import calendar
 import time
 ts = calendar.timegm(time.gmtime())
 
-submission.to_csv("submissions/sub_" + str(ts) + ".csv", index=None, header=None, )
+submission.to_csv("submissions/NN_2_scaled__" + str(ts) + ".csv", index=None, header=None, )
 
 
 
