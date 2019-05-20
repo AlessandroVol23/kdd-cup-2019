@@ -30,6 +30,37 @@ python ./src/data/make_dataset.py /path/to/kdd-cup-2019/data/raw/ /path/to/kdd-c
 
 After executing the script you see some output, wait until it says "Preprocessing Done!"
 
+## Models
+
+### How to save a model?
+
+```python
+# Add sys to sys path to import custom modules from source
+import sys
+sys.path.append("../src/")
+
+# Import custome function save model
+from src.models.utils import save_model
+save_model(lgb_model, "../models/test_model.pickle")
+# Be careful! The path varies of course.
+# It is just allowed to save models in the models folder
+```
+
+### Light GBM Multiclass Baseline Model
+
+The model is saved in `models/lgbmodel_2k.pickle`. You can load it with:
+
+```python
+# Add sys to sys path to import custom modules from source
+import sys
+sys.path.append("../src/")
+
+# Import custom function load_model
+from src.models.utils import load_model
+lgb_model = load_model("../models/lgbmodel_2k.pickle")
+```
+
+## Project description
 
 A short description of the project:
 
