@@ -40,7 +40,7 @@ import sys
 sys.path.append("../src/")
 
 # Import custome function save model
-from models.utils import save_model
+from src.models.utils import save_model
 save_model(lgb_model, "../models/test_model.pickle")
 # Be careful! The path varies of course.
 # It is just allowed to save models in the models folder
@@ -56,12 +56,11 @@ import sys
 sys.path.append("../src/")
 
 # Import custom function load_model
-from models.utils import load_model
-model = load_model("../models/lgbmodel_2k.pickle")
+from src.models.utils import load_model
+lgb_model = load_model("../models/lgbmodel_2k.pickle")
 ```
 
-
-
+## Project description
 
 A short description of the project:
 
