@@ -8,6 +8,7 @@ import geopandas as gpd
 # Initialize logger
 logger = logging.getLogger(__name__)
 
+    
 def time_features(dataf, type = 'req'):
     '''
     Creates 5 new time column on the dataframe. This can be used with:
@@ -99,3 +100,27 @@ def add_dist_nearest_subway(dataf):
     gdf_dataf = gdf_dataf.drop('geometry', 1)
 
     return gdf_dataf
+    
+def add_weather_features(dataf, type='req'):
+    '''
+    This function adds 4 new columns about the weather
+
+    * maximum temperature in that day
+    * minimum temperature in that day
+    * type of weather: ['q', 'dy', 'dyq', 'qdy', 'xq', 'xydy']
+    * wind
+    '''
+    with open("../data/external/weather.json", 'r') as f:
+        weather_dict = json.load(f)
+
+    if 'req_date' not in dataf:
+        dataf[type + '_time'] = pd.to_datetime(dataf[type + '_time'])
+        dataf[type + '_date'] = dataf['req_time'].dt.strftime('%m-%d')
+
+    dataf['max_temp'] = dataf['req_date'].apply(lambda r: weather_dict[r]['max_temp'])
+    dataf['min_temp'] = dataf['req_date'].apply(lambda r: weather_dict[r]['min_temp'])
+    dataf['weather']  = dataf['req_date'].apply(lambda r: weather_dict[r]['weather'])
+    dataf['wind']     = dataf['req_date'].apply(lambda r: weather_dict[r]['wind'])
+
+    return dataf
+    
