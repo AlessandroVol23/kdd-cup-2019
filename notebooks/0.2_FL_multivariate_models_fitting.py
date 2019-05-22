@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu May 16 17:35:37 2019
-
-@author: kuche_000
-"""
-
-# -*- coding: utf-8 -*-
-"""
 Created on Tue May 14 16:32:20 2019
 
 @author: kuche_000
@@ -22,66 +15,54 @@ First few Multiclass Models for KDD, based on the data in:
 		
 	
 	
+Make sure, that your workingdirectory is on: '..\kdd-cup-2019'
 """
-# Make sure, that your workingdirectory is on: "C:\Users\kuche_000\Desktop\kdd-cup-2019"
 
 # Load all Packages needed
 import pandas as pd
 import numpy as np
+import os
 import sklearn
 import sklearn.tree
 import sklearn.ensemble
 import sklearn.metrics as metrics
 import pickle
+import sklearn.linear_model
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
+import json
 
-# Read data in: ---------------------------------------------------------------
-# Data we train the model with [features should be added in a seperate script]
+# Check Working Directory:
+if "kdd-cup-2019" not in os.getcwd():
+	raise ValueError("Your Working Directory is not set correctly")
+
+#%% Read in Data, the SIDs for CV & Select Features
+# [1] Data we train the model with (features were added seperatly]
 df_train     = pd.read_pickle("data/processed/Ready_to_Train_Test/Multiclass/Train_Set")
 df_test      = pd.read_pickle("data/processed/Ready_to_Train_Test/Multiclass/Test_Set")
 
-# Should not contain any NAs
-df_train.isnull().sum().sum()
-df_test.isnull().sum().sum()
+# [2] SessionIDs for reproducible k-fold-CV:
+SIDs = []
+for cv in range(1, 6):
+	with open("data/processed/Test_Train_Splits/5-fold/SIDs_" + str(cv) + ".txt", "rb") as fp:
+		 SIDs.append(pickle.load(fp))	 
+	
+# [3] Names of the features we want to use 
+#     [need to be in colnames of df_test/ df_train]
+Distances = ['Distance_{}'.format(i) for i in range(1, 12)]
+Costs     = ['Cost_{}'.format(i) for i in range(1, 12)]
+Time      = ['Time_{}'.format(i) for i in range(1, 12)]
+svd_feas  = ['svd_fea_{}'.format(i) for i in range(20)]
+time_feas = ['req_weekend','req_evening_bi', 'req_night_bi', 'req_day_bi'] # still more
+pid_feas  = ['p{}'.format(i) for i in range(66)]
 
+# Add the list of names we want to add:
+feature_names = Distances + Costs + Time + svd_feas + time_feas
 
-# Select Features we want to use ----------------------------------------------
-# should be in list(df_test) & list(df_train)
-feature_names = ['Distance_1','Distance_2','Distance_3','Distance_4','Distance_5',
-				 'Distance_6', 'Distance_7', 'Distance_8', 'Distance_9', 'Distance_10',
-				 'Distance_11','Time_1', 'Time_2', 'Time_3', 'Time_4', 'Time_5',
-				 'Time_6','Time_7','Time_8','Time_9','Time_10','Time_11','Cost_1',
-				 'Cost_2', 'Cost_3','Cost_4','Cost_5','Cost_6','Cost_7','Cost_8',
-				 'Cost_9','Cost_10', 'Cost_11', 'req_weekend','req_evening_bi',
-				  'req_night_bi', 'req_day_bi', 
-				  'p0','p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9',
-				  'p10', 'p11', 'p12', 'p13', 'p14', 'p15', 'p16', 'p17', 
-				  'p18', 'p19', 'p20', 'p21', 'p22', 'p23', 'p24', 'p25',
-				  'p26', 'p27', 'p28', 'p29', 'p30', 'p31', 'p32', 'p33',
-				  'p34', 'p35', 'p36', 'p37', 'p38', 'p39', 'p40', 'p41',
-				  'p42', 'p43', 'p44', 'p45', 'p46', 'p47', 'p48', 'p49',
-				  'p50', 'p51', 'p52', 'p53', 'p54', 'p55', 'p56', 'p57', 
-				  'p58', 'p59', 'p60', 'p61', 'p62', 'p63', 'p64', 'p65']
+#%% Define Function needed for Modelling and Submitting
+# [1] Define a Function, we pass our Train DF, our CV-SIDs and a Model  
+#     which returns a list with the F1-Scores on each fold:
 
-# Start the process of finding a Modell----------------------------------------
-# Load the SessionIDs for reproducible k-fold-CV and bind it in one list:
-with open("data/processed/Test_Train_Splits/5-fold/SIDs_1.txt", "rb") as fp:
-	 SIDs_1 = pickle.load(fp)	 
-with open("data/processed/Test_Train_Splits/5-fold/SIDs_2.txt", "rb") as fp:
-	 SIDs_2 = pickle.load(fp)	 
-with open("data/processed/Test_Train_Splits/5-fold/SIDs_3.txt", "rb") as fp:
-	 SIDs_3 = pickle.load(fp)
-with open("data/processed/Test_Train_Splits/5-fold/SIDs_4.txt", "rb") as fp:
-	 SIDs_4 = pickle.load(fp)	 
-with open("data/processed/Test_Train_Splits/5-fold/SIDs_5.txt", "rb") as fp:
-	 SIDs_5 = pickle.load(fp)
-	 
-SIDs = [SIDs_1, SIDs_2, SIDs_3, SIDs_4, SIDs_5]
-
-# Start Modelling -------------------------------------------------------------
-# Define a Function, we pass our Train DF, our CV-SIDs & a Model, and that 
-# returns a list with the scores on each fold:
 def get_cv_score(data, features, model, CV, scaled = False):
 	"""
 	A Function to calculate the [F-1]-CV-Score of a Model.
@@ -145,8 +126,9 @@ def get_cv_score(data, features, model, CV, scaled = False):
 										    average="weighted"))
 		
 	return Res
-	
-# [1] First RF: ---------------------------------------------------------------
+
+"""
+Example of Use:
 forest = sklearn.ensemble.RandomForestClassifier(criterion='entropy',
 												 n_estimators = 10, 
 												 random_state = 1,
@@ -154,80 +136,68 @@ forest = sklearn.ensemble.RandomForestClassifier(criterion='entropy',
 
 forest_res = get_cv_score(data = df_train, features = feature_names, 
 			              model = forest, CV = SIDs, scaled = False)
-
-# [2] Second RF ---------------------------------------------------------------
-forest2 = sklearn.ensemble.RandomForestClassifier(criterion='entropy',
-											 	  n_estimators=5, 
-											      random_state=1,
-												  n_jobs=2) # Parallelisierung 
-
-forest_res2 = get_cv_score(data = df_train, features = feature_names, 
-			               model = forest2, CV = SIDs, scaled = False)
-
-# [3] NN1 ---------------------------------------------------------------------
-mlp = MLPClassifier(hidden_layer_sizes=(40, 40, 30))
-
-mlp_res = get_cv_score(data = df_train, features = feature_names, 
-			           model = mlp, CV = SIDs, scaled = True)
-
-# [4] NN2----------------------------------------------------------------------
-mlp2 = MLPClassifier(hidden_layer_sizes=(50, 40, 30, 20))
-
-mlp_res2 = get_cv_score(data = df_train, features = feature_names, 
-			            model = mlp2, CV = SIDs, scaled = True)
-
-# [5] Sample Multiple Trees----------------------------------------------------
-forrrest_res_all = []
-for deppness in range(1, 21):
+"""
+#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+# [2] Run over different Parameters and save the results as pickle-DF:
+def track_cv_results(model, model_cv_res, folder, features, model_type):
+	"""
+	Function to track the Results of the 'get_cv_score' Function
+	Every Single CV-Result will be saved as '.csv' in folder!
 	
-	print("State: " + str(deppness) + "/" + str(20))
+	Args:
+		- model (skelarn)    : a model, we want to save
+		- model_cv_res (list): CV Results of the corresponding Model
+		- features (list)    : list of features that were used to fit the model
+		- folder (str)       : A folder in './reports/Model_Results' 
+	    - model_type (str)   : What Modeltype (NeuralNet, RandomForrest, ...)
+							  
+	Return:
+		- A .csv-File, with all Informations to the current test
+             each CV-Score, the mean of the CV-Scores, the feature_names,
+             and the type of the model [extra Arg: 'model_type']					        
+	"""
+	# [1] Get the Parameters of the Models [as. character]
+	_params = json.dumps(model.get_params())
 	
-	forest = sklearn.ensemble.RandomForestClassifier(criterion='entropy',
-												 n_estimators = deppness, 
-												 random_state = 1,
-												 n_jobs = 2)
+	# [2] Check whether the Folder is existent already and throw error if not
+	#     If existent, check how many files inside, so we can Index the files
+	if not os.path.isdir("reports/Model_Results/Multiclass/" + str(folder)):
+		raise ValueError("'folder'is not existent in 'reports/Model_Results/'")
+	else:
+		file_number = len(os.listdir("reports/Model_Results/Multiclass/" + str(folder)))
+		
+	# [3] Create Dict to save them to a Pandas:
+	dict_to_pd = {'model_type' : model_type, 'parameters' : _params,
+			      'features' : "-/".join(features)}
 	
-	forest_res_current = []
-	forest_res_current = get_cv_score(data = df_train, features = feature_names, 
-						              model = forest, CV = SIDs, scaled = False)
+	# add the CV Results to the Dict:
+	for index, cv_curr in enumerate(model_cv_res):
+		dict_to_pd["CV_" + str(index)] = cv_curr
 	
-	forrrest_res_all.append(forest_res_current)
+	dict_to_pd["CV_mean"] = np.mean(model_cv_res)
 	
-	_name = "criterion=entropy,n_estimators=" + str(deppness) + ",random_state = 1,n_jobs = 2"
+	pd_res = pd.DataFrame([dict_to_pd])
 	
-	with open("data/processed/Multiclass_Approach/model_results/random_forrest/" +_name + ".txt", "wb") as fp:
-		pickle.dump(forrrest_res_all, fp)
-
-# Create A DF from it:	
-forrest_results = pd.DataFrame({'5_fold_cv_results': forrrest_res_all,
-								'n_estimator': range(1, 21)})
-	
-# [6] Sample Multiple NN-------------------------------------------------------
-NN_net_all = []
-for First_Layer in range(50, 60, 5):
-	
-	print("First Layer Size: " + str(First_Layer))
-	
-	mlp = MLPClassifier(hidden_layer_sizes=(First_Layer, 25, 20))
-
-	mlp_res_current = get_cv_score(data = df_train, features = feature_names, 
-			                       model = mlp, CV = SIDs, scaled = True)
-	
-	
-	NN_net_all.append(mlp_res_current)
-	
-	_name = "MLPClassifier(hidden_layer_sizes=(" + str(First_Layer) + ", 25, 20, 5))" 
-	
-	with open("data/processed/Multiclass_Approach/model_results/nn/" +_name + ".txt", "wb") as fp:
-		pickle.dump(mlp_res_current, fp)
+	pd_res.to_csv("reports/Model_Results/Multiclass/" + str(folder) + "/" + str(file_number) + ".csv")
 
 
-# Create a DF from it:	
-nn_results = pd.DataFrame({'5_fold_cv_results': NN_net_all,
-								'first layer deppness': range(10, 60, 5)})
+"""
+Example of Use:
 	
-# -----------------------------------------------------------------------------
-# Get Predicitons for the Test_Set and a .csv File ready to submitt -----------
+knn_curr = sklearn.neighbors.KNeighborsClassifier(n_neighbors = 2, n_jobs = 2)
+		
+knn_curr_res = get_cv_score(data = df_train, features = feature_names, 
+	                        model = knn_curr, CV = SIDs, scaled = True)
+
+track_cv_results(model  = knn_curr, 
+		         model_cv_res = knn_curr_res, 
+		         folder = "knn_PID_svd", 
+				 features = feature_names, 
+				 model_type = "KNN")
+"""
+
+#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+# [3] Get Predicitons for the Test_Set File ready to submitt on Baiduu
 def predict_test_data(model, train_data, test_data, features, scaled = False):
 	"""
 	Function to train a model, do predictions on the test set and 
@@ -252,8 +222,10 @@ def predict_test_data(model, train_data, test_data, features, scaled = False):
 		                        we want to use for modelling
 		
 		- scaled (boolean)   : Shall the feature values be scaled?
+		
 	 Return:
-		 pandas file  with
+		 (pandas)-DF in the correct layout, that just needs to be saved as .csv
+		                                                [pd.to_csv("...")]
 	"""
 	
 	# Feature Scaling (only if "scaled" = True)
@@ -276,15 +248,47 @@ def predict_test_data(model, train_data, test_data, features, scaled = False):
 	
 	return submission
 
-
-# Exmaple to for the function based on the model with the best CV-Score!
-mlp = MLPClassifier(hidden_layer_sizes=(55, 25, 20))
-
-subfile = predict_test_data(model = mlp, 
+"""
+Example of Use:
+	
+subfile = predict_test_data(model      = mlp, 
 			    	        train_data = df_train, 
 				            test_data  = df_test, 
 				            features   = feature_names, 
-				            scaled = True)
+				            scaled     = True)
 
-# save as ".csv" we can upload on Baidu
-subfile.to_csv("submissions/sub_NN_Scaled_Features_55_First_Layer.csv", index=None, header=None)
+subfile.to_csv("submissions/NN_w_pid_features_MLPClassifier_40_25_20.csv", 
+			   index = None, header = None)
+"""
+
+#%% Start creating Modells: 
+"""
+Basically select a model, its parameters, folder where it shall be saved & 
+
+"""
+if __name__ == '__main__':
+	
+	for k in [0.001, 0.01, 0.1, 1, 10, 100]:
+		print("Current k: " + str(k))
+		
+		log_curr = sklearn.linear_model.LogisticRegression(penalty='l2', C = k)
+		
+		
+		log_curr_res = get_cv_score(data = df_train, features = feature_names, 
+			                        model = log_curr, CV = SIDs, scaled = True)
+		
+		track_cv_results(model        = log_curr, 
+				         model_cv_res = log_curr_res, 
+				         folder       = "_log_reg", 
+						 features     = feature_names, 
+						 model_type   = "log_reg")
+	
+# Create a Submission for the best Submitted File
+subfile = predict_test_data(model      = mlp, 
+			    	        train_data = df_train, 
+				            test_data  = df_test, 
+				            features   = feature_names, 
+				            scaled     = False)
+
+# subfile.to_csv("submissions/RF_w_PID_fea20_criterion=entropy_n_estimators=20.csv", 
+# 			   index = None, header = None)
