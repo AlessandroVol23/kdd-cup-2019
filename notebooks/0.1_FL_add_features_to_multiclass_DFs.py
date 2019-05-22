@@ -159,7 +159,6 @@ def gen_profile_feas(data, k):
 df_train_multi = gen_profile_feas(data = df_train_multi, k  = 20)
 df_test_multi  = gen_profile_feas(data = df_test_multi,  k  = 20)
 
-
 #%% Add Distance to closest Subway Station!
 #!!! Need to get external data!!!
 ###############################################################################
