@@ -88,5 +88,11 @@ target/
 
 # Mypy cache
 .mypy_cache/
+
+
+pandas/
+.dvc/
 /data
 submissions/
+
+/submissions

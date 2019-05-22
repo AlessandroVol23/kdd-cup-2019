@@ -30,6 +30,43 @@ python ./src/data/make_dataset.py /path/to/kdd-cup-2019/data/raw/ /path/to/kdd-c
 
 After executing the script you see some output, wait until it says "Preprocessing Done!"
 
+## Features
+
+You can add all features by running `../src/features/add_features.py`, or add them individually:
+
+If you have library problems, install them:
+
+```bash
+pip install geopandas
+```
+
+### time_features
+
+```python
+from src.features.build_features import time_features
+
+df_train = time_features(df_train, type='req')
+df_test = time_features(df_test, type='req')
+```
+
+### add_public_holidays
+
+```python
+from src.features.build_features import add_public_holidays
+
+df_train = add_public_holidays(df_train)
+df_test = add_public_holidays(df_test)
+```
+
+### add_dist_nearest_subway
+
+```python
+from src.features.build_features import add_dist_nearest_subway
+
+df_train = add_dist_nearest_subway(df_train)
+df_test = add_dist_nearest_subway(df_test)
+```
+
 ## Models
 
 ### How to save a model?
@@ -38,6 +75,8 @@ After executing the script you see some output, wait until it says "Preprocessin
 # Add sys to sys path to import custom modules from source
 import sys
 sys.path.append("../src/")
+<<<<<<< README.md
+```
 
 # Import custome function save model
 from src.models.utils import save_model
