@@ -44,10 +44,16 @@ pip install geopandas
 
 For the initial raw preprocessing with features (no external), run this file in `../kdd-cup-2019`. Choose `first` or `last` depending on which transport mode you prefer to pick, the one displayed first in the plan list or last.
 
-```shell
-python ./src/data/make_raw_preprocessing.py /path/to/kdd-cup-2019/data 'first'
+```shell./src/data/make_raw_preprocessing.py /path/to/kdd-cup-2019/data 'first'
+python 
 ```
 
+The two dataframes are stored in `../data/processed_raw/`
+
+* train pickle hast 500000 x 114 dimensions
+* test pickle hast 94358 x 112 dimensions
+
+Train pickle hast `click_time` and `click_mode` as additional columns.
 
 ### time_features
 
