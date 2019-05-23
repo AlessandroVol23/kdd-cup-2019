@@ -50,10 +50,10 @@ python
 
 The two dataframes are stored in `../data/processed_raw/`
 
-* train pickle hast 500000 x 114 dimensions
-* test pickle hast 94358 x 112 dimensions
+* train pickle has 500000 x 114 dimensions
+* test pickle has 94358 x 112 dimensions
 
-Train pickle hast `click_time` and `click_mode` as additional columns.
+Train pickle has `click_time` and `click_mode` as additional columns.
 
 ### time_features
 
