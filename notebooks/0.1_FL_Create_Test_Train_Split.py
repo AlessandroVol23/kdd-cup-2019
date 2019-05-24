@@ -12,10 +12,10 @@ import random
 import pickle
 
 # load the train_data:
-train = pd.read_pickle("data/processed/Multiclass_Approach/MulticlassTrainSet")
+train = pd.read_csv("data/raw/data_set_phase1/train_queries.csv")
 
 # randomly sample 5 equal sized arrays of sids, use to slice the DFs
-all_sids = train["SID"]
+all_sids = train["sid"]
 
 sampled_ids = random.sample(list(all_sids), k = len(all_sids))
 
@@ -39,7 +39,6 @@ len(SIDs_2)
 len(SIDs_3)
 len(SIDs_4)
 len(SIDs_5)
-
 
 # Save the Results as single pickle files:
 with open("data/processed/Test_Train_Splits/SIDs_1.txt", "wb") as fp:
