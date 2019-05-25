@@ -19,11 +19,15 @@ def main():
     for pick in os.listdir(inpath):
         print("Reading: " + pick)
         df = pd.read_pickle(os.path.join(inpath, pick))
+        print("Before: " + str(df.shape[0]) + ", " + str(df.shape[1]))
+        print("Merging: " + pick)
         if 'train' in pick:
             newdf = pd.merge(df, exttrain)
         elif 'test' in pick:
             newdf = pd.merge(df, exttest)
+        print("After: " + str(newdf.shape[0]) + ", " + str(newdf.shape[1]))
         outpick = pick.replace('raw', 'all')
+        print("Writing: " + outpick)
         newdf.to_pickle(os.path.join(outpath, outpick))
 
 
