@@ -111,6 +111,8 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
             else:
                 df = df_plans.copy()
             df = pd.merge(df, df_queries, on="sid")
+            df = pd.merge(df, df_profiles, how='outer')
+            df = df[pd.notnull(df['o_long'])]
 
         else:
             print("Wrong df_mode, try with 'col' or 'row'")
