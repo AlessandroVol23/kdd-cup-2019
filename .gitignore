@@ -19,6 +19,7 @@ lib64/
 parts/
 sdist/
 var/
+reports/Model_Results/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -87,4 +88,12 @@ target/
 
 # Mypy cache
 .mypy_cache/
+
+
+pandas/
+.dvc/
 /data
+submissions/
+
+/submissions
+/models

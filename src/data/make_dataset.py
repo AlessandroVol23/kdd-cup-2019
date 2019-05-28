@@ -141,6 +141,7 @@ def preprocess_datatypes(df_plans, df_clicks, df_queries):
         df_clicks.sid = df_clicks.sid.astype(int)
 
     df_queries.sid = df_queries.sid.astype(int)
+    df_queries.req_time = pd.to_datetime(df_queries.req_time)
 
     return df_plans, df_clicks, df_queries
 

@@ -30,6 +30,58 @@ python ./src/data/make_dataset.py /path/to/kdd-cup-2019/data/raw/ /path/to/kdd-c
 
 After executing the script you see some output, wait until it says "Preprocessing Done!"
 
+## Features
+
+You can add all features by running `../src/features/add_features.py`, or add them individually:
+
+If you have library problems, install them:
+
+```bash
+pip install geopandas
+```
+
+### Raw preprocessing
+
+For the initial raw preprocessing with features (no external), run this file in `../kdd-cup-2019`. Choose `first` or `last` depending on which transport mode you prefer to pick, the one displayed first in the plan list or last.
+
+```shell./src/data/make_raw_preprocessing.py /path/to/kdd-cup-2019/data 'first'
+python 
+```
+
+The two dataframes are stored in `../data/processed_raw/`
+
+* train pickle has 500000 x 114 dimensions
+* test pickle has 94358 x 112 dimensions
+
+Train pickle has `click_time` and `click_mode` as additional columns.
+
+### time_features
+
+```python
+from src.features.build_features import time_features
+
+df_train = time_features(df_train, type='req')
+df_test = time_features(df_test, type='req')
+```
+
+### add_public_holidays
+
+```python
+from src.features.build_features import add_public_holidays
+
+df_train = add_public_holidays(df_train)
+df_test = add_public_holidays(df_test)
+```
+
+### add_dist_nearest_subway
+
+```python
+from src.features.build_features import add_dist_nearest_subway
+
+df_train = add_dist_nearest_subway(df_train)
+df_test = add_dist_nearest_subway(df_test)
+```
+
 ## Models
 
 ### How to save a model?
@@ -38,9 +90,11 @@ After executing the script you see some output, wait until it says "Preprocessin
 # Add sys to sys path to import custom modules from source
 import sys
 sys.path.append("../src/")
+<<<<<<< README.md
+```
 
 # Import custome function save model
-from models.utils import save_model
+from src.models.utils import save_model
 save_model(lgb_model, "../models/test_model.pickle")
 # Be careful! The path varies of course.
 # It is just allowed to save models in the models folder
@@ -56,12 +110,11 @@ import sys
 sys.path.append("../src/")
 
 # Import custom function load_model
-from models.utils import load_model
-model = load_model("../models/lgbmodel_2k.pickle")
+from src.models.utils import load_model
+lgb_model = load_model("../models/lgbmodel_2k.pickle")
 ```
 
-
-
+## Project description
 
 A short description of the project:
 
@@ -75,6 +128,12 @@ Project Organization
     │   ├── external       <- Data from third party sources.
     │   ├── interim        <- Intermediate data that has been transformed.
     │   ├── processed      <- The final, canonical data sets for modeling.
+    |   |   |___  15_to_one_df          <- preprocessed data for light gbm approach [via feature/#-15 preprocess data]
+    |   |   |                              [no features added]
+    |   |   |___  Multiclass_Approach   <- preprocessed data for multiclass approaches [37_BaselineModell_SVM]
+    |   |   |                              [no features added]
+    |   |   |___  Test_Train_Splits     <- Folders with the SID of the k-fold splits [5-fold, ...]
+    |   |
     │   └── raw            <- The original, immutable data dump.
     │
     ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
@@ -86,6 +145,8 @@ Project Organization
     ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
     │                         the creator's initials, and a short `-` delimited description, e.g.
     │                         `1.0-jqp-initial-data-exploration`.
+    |
+    |___ submissions       <- submission files [SID, y_hat] as .csv
     │
     ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
     │
