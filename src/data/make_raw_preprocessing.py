@@ -118,6 +118,10 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
             print("Wrong df_mode, try with 'col' or 'row'")
             sys.exit(-1)
         
+        df.pid = df.pid.apply(lambda x: 0 if np.isnan(x) else x)
+        for i in range(66):
+            df['p'+str(i)] = df['p'+str(i)].apply(lambda x: -1 if np.isnan(x) else x)
+
         return df
 
     '''
@@ -240,6 +244,10 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
         print("Wrong df mode, try with 'row' or 'col'")
         sys.exit(-1)
 
+    if 'click_mode' in df:
+        print("Preprocessing click_mode")
+        df.click_mode = df.click_mode.apply(lambda x: 0 if np.isnan(x) else x)
+
     if 'plans' in df:
         df = df.drop('plans', axis=1)
     return df
@@ -252,13 +260,15 @@ def main(absolute_path_data_folder, df_mode, plan_mode):
 
     df_profiles, df_train_queries, df_train_plans, df_train_clicks, df_test_queries, df_test_plans = read_in_data(absolute_path_data_folder)
     
-    print("Creating raw features for df_train")
+    print("traindf: creating raw features for df_train")
     df_train = raw_preprocessing(df_train_queries, df_train_plans, df_profiles, clickdf=df_train_clicks, df_mode=df_mode, plan_mode=plan_mode)
     print("Writing train to pickle in ../data/processed_raw/")
     write_data(absolute_path_data_folder, df_train, 'train', df_mode, plan_mode)
 
-    print("Creating raw features for df_test")
+    print("\n")
+    print("testdf_ creating raw features for df_test")
     df_test = raw_preprocessing(df_test_queries, df_test_plans, df_profiles, df_mode=df_mode, plan_mode=plan_mode)
+    print("Writing test to pickle in ../data/processed_raw/")
     write_data(absolute_path_data_folder, df_test, 'test', df_mode, plan_mode)
 
     return

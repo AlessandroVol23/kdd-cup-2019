@@ -111,7 +111,8 @@ def add_dist_nearest_subway(dataf):
     
     # https://gis.stackexchange.com/questions/222315/geopandas-find-nearest-point-in-other-dataframe
     def near(point, pts=pts3):
-        print("Processing row {}".format(str(near.i + 1)), end="\r")
+        if (near.i + 1) % 100 == 0:
+            print("Processing row {}".format(str(near.i + 1)), end="\r")
         near.i += 1
         # find the nearest point and return the corresponding Place value
         nearest = gdf_subways.geometry == nearest_points(point, pts)[1]
@@ -120,9 +121,11 @@ def add_dist_nearest_subway(dataf):
     near.i = 0
     gdf_dataf['dist_nearest_sub'] = gdf_dataf.apply(lambda row: near(row.geometry, pts3), axis=1)
     gdf_dataf = gdf_dataf.drop('geometry', 1)
+    dataf = pd.DataFrame(gdf_dataf)
+    dataf["dist_nearest_sub"] = pd.to_numeric(dataf["dist_nearest_sub"])
     print("\n")
 
-    return gdf_dataf
+    return dataf
 
 def add_weather_features(dataf, type='req'):
     '''
@@ -144,5 +147,16 @@ def add_weather_features(dataf, type='req'):
     dataf['min_temp'] = dataf['req_date'].apply(lambda r: weather_dict[r]['min_temp'])
     dataf['weather']  = dataf['req_date'].apply(lambda r: weather_dict[r]['weather'])
     dataf['wind']     = dataf['req_date'].apply(lambda r: weather_dict[r]['wind'])
+
+    dataf["max_temp"] = pd.to_numeric(dataf["max_temp"])
+    dataf["min_temp"] = pd.to_numeric(dataf["min_temp"])
+    dataf["wind"]     = pd.to_numeric(dataf["wind"])
+
+    dataf = dataf.join(pd.get_dummies(dataf["weather"]))
+
+    weather_only_in_train = ['xydy', 'xq']
+    for el in weather_only_in_train:
+        if el not in dataf:
+            dataf[el] = 0
 
     return dataf
