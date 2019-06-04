@@ -2,51 +2,41 @@ kdd-cup-2019
 ==============================
 This is the repository for the Big Data Science practical course @ LMU.
 
-### Raw preprocessing
+## Raw preprocessing
 
-For the initial raw preprocessing with features (no external), run this file in `../kdd-cup-2019`. Choose `first` or `last` depending on which transport mode you prefer to pick, the one displayed first in the plan list or last.
+For the initial raw preprocessing with features (no external), run this file in `../kdd-cup-2019`. 
 
-```shell./src/data/make_raw_preprocessing.py /path/to/kdd-cup-2019/data 'first'
-python 
+* Choose `row` or `col` depending on what model you want to train
+* Choose `first` or `last` depending on which transport mode you prefer to pick, the one displayed first in the plan list or last.
+
+This adds the 'raw' features:
+
+* Coordinates
+* Profiles
+* Targets
+* Unstack of plans
+* 
+
+```shell
+python ./src/data/make_raw_preprocessing.py /path/to/kdd-cup-2019/data 'col' 'first'
 ```
 
-The two dataframes are stored in `../data/processed_raw/`
+## External features preprocessing
 
-* train pickle has 500000 x 114 dimensions
-* test pickle has 94358 x 112 dimensions
+This adds the external features:
 
-Train pickle has `click_time` and `click_mode` as additional columns.
+* Distance to closest subway
+* Time features
+* Public holiday
+* Weather features
 
-### time_features
-
-```python
-from src.features.build_features import time_features
-
-df_train = time_features(df_train, type='req')
-df_test = time_features(df_test, type='req')
+```shell
+python ./src/features/add_external.py
 ```
 
-### add_public_holidays
+# Models
 
-```python
-from src.features.build_features import add_public_holidays
-
-df_train = add_public_holidays(df_train)
-df_test = add_public_holidays(df_test)
-```
-
-### add_dist_nearest_subway
-
-```python
-from src.features.build_features import add_dist_nearest_subway
-
-df_train = add_dist_nearest_subway(df_train)
-df_test = add_dist_nearest_subway(df_test)
-```
-
-## Models
-
-### How to save a model?
+## How to save a model?
 
 ```python
 # Add sys to sys path to import custom modules from source
@@ -75,6 +65,50 @@ sys.path.append("../src/")
 from src.models.utils import load_model
 lgb_model = load_model("../models/lgbmodel_2k.pickle")
 ```
+You can execute the script to train a model: 
+There is a conda environment in `environments/lgb_baseline.yml`
+
+The script command is: (from repo root) 
+```bash
+ python src/models/lgbm_multiclass_baseline/lgbm_mc_bl.py <PATH_TRAIN_FILE> <PATH_TEST_FILE> <PATH_FEATURE_LIST> <NAME> <SAMPLE_MODE> <SAMPLE_AMOUNT>
+```
+
+You can enter max six different sample modes. Feature list is just a pickle file which is a python list with all feature names to take from train and test file.
+
+## README for the Stacking:
+
+#### OBACHT
+Script is not completly ready to run, will be finished by Denny ASAP
+
+
+#### Function is in src/models/stacking and called "fit_stacking_model"
+
+Args:
+ - datafolder (string) : 
+   folder, that holds all modelpredicitons (from other models) we want to use as feas to do predicitons on e.g. "models/Multivariate Approach/merged_dfs/knn"
+   Assumptions to the DFs: DF with layout for multiclass learning 
+                           DF shall contain   a "Respond" Column,
+                                              a "sid"     Column,
+                                          &   all 'features_stack'
+                          features_stack in this case are the predictions of
+                          the submodells the stacked model builds on!
+
+            --> Upcoming in the next version (hopefully)
+                removing the CV Argument and assume a "fold" column
+                        in the dataframes in the datafolder
+        
+ - model (sklearn) : model, that we use as stacked model [multiclass model!] must have: 'predict' & 'fit method'
+                     e.g. sklearn.ensemble.RandomForestClassifier(criterion = 'entropy', n_estimators = 25,
+                                                                  random_state = 1, n_jobs = 2)
+
+ - CV (folder)     : folder that holds the single (pickle)-files with folds used for CV
+                     e.g."data/processed/Test_Train_Splits/5-fold"
+                  
+- add_feas (list) : list of strings, that define, whether additional features shall be used
+                    [need to be in "data/processed/multiclass/with_SVD_20/train_all_first.pickle"-DF]
+                          
+- scaled (boolean) : Shall the features be scaled? 
+
 
 You can execute the script to train a model: 
 There is a conda environment in `environments/lgb_baseline.yml`

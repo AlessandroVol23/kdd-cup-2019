@@ -1,6 +1,8 @@
 import sys
-import pandas as pd
+import json
+import math
 import logging
+import pandas as pd
 from shapely.ops import nearest_points
 from shapely.geometry import Point
 import geopandas as gpd
@@ -8,7 +10,27 @@ import geopandas as gpd
 # Initialize logger
 logger = logging.getLogger(__name__)
 
-    
+def preprocess_coordinates(df):
+    '''
+    Generates following 5 columns
+    * o_long
+    * o_lat
+    * d_long
+    * d_lat
+
+    And deletes these:
+    * o
+    * d
+
+    +2 columns
+    '''
+    df[["o_long", "o_lat"]] = df.o.str.split(",", 1, expand=True).astype(float)
+    df.drop("o", axis=1, inplace=True)
+
+    df[["d_long", "d_lat"]] = df.d.str.split(",", 1, expand=True).astype(float)
+    df.drop("d", axis=1, inplace=True)
+    return df
+
 def time_features(dataf, type = 'req'):
     '''
     Creates 5 new time column on the dataframe. This can be used with:
@@ -53,7 +75,7 @@ def add_public_holidays(dataf):
     '''
     Creates 1 new time column on the dataframe, a binary column stating if the date is a public holiday or not.
     '''
-    df_holidays = pd.read_csv("../data/external/CN_holidays_summary.csv", index_col=False)
+    df_holidays = pd.read_csv("data/external/CN_holidays_summary.csv", index_col=False)
     if 'req_date' not in dataf:
         try:
             dataf['req_time'] = pd.to_datetime(dataf['req_time'])
@@ -77,7 +99,7 @@ def add_dist_nearest_subway(dataf):
         Points = gpd.GeoDataFrame(df_copy, crs=crs, geometry=geometry)
         return Points
 
-    df_subways = pd.read_csv("../data/external/subways.csv", index_col=False).round(2)
+    df_subways = pd.read_csv("data/external/subways.csv", index_col=False).round(2)
 
     if 'o_lat' not in dataf or 'o_long' not in dataf:
         logger.error("The dataframe doesn't have the coordinates in the correct format. They need to be 'o_lat' and 'o_long'.")
@@ -89,7 +111,8 @@ def add_dist_nearest_subway(dataf):
     
     # https://gis.stackexchange.com/questions/222315/geopandas-find-nearest-point-in-other-dataframe
     def near(point, pts=pts3):
-        print("Processing row {}".format(str(near.i + 1)), end="\r")
+        if (near.i + 1) % 100 == 0:
+            print("Processing row {}".format(str(near.i + 1)), end="\r")
         near.i += 1
         # find the nearest point and return the corresponding Place value
         nearest = gdf_subways.geometry == nearest_points(point, pts)[1]
@@ -98,9 +121,12 @@ def add_dist_nearest_subway(dataf):
     near.i = 0
     gdf_dataf['dist_nearest_sub'] = gdf_dataf.apply(lambda row: near(row.geometry, pts3), axis=1)
     gdf_dataf = gdf_dataf.drop('geometry', 1)
+    dataf = pd.DataFrame(gdf_dataf)
+    dataf["dist_nearest_sub"] = pd.to_numeric(dataf["dist_nearest_sub"])
+    print("\n")
 
-    return gdf_dataf
-    
+    return dataf
+
 def add_weather_features(dataf, type='req'):
     '''
     This function adds 4 new columns about the weather
@@ -110,7 +136,7 @@ def add_weather_features(dataf, type='req'):
     * type of weather: ['q', 'dy', 'dyq', 'qdy', 'xq', 'xydy']
     * wind
     '''
-    with open("../data/external/weather.json", 'r') as f:
+    with open("data/external/weather.json", 'r') as f:
         weather_dict = json.load(f)
 
     if 'req_date' not in dataf:
@@ -122,5 +148,19 @@ def add_weather_features(dataf, type='req'):
     dataf['weather']  = dataf['req_date'].apply(lambda r: weather_dict[r]['weather'])
     dataf['wind']     = dataf['req_date'].apply(lambda r: weather_dict[r]['wind'])
 
+    dataf["max_temp"] = pd.to_numeric(dataf["max_temp"])
+    dataf["min_temp"] = pd.to_numeric(dataf["min_temp"])
+    dataf["wind"]     = pd.to_numeric(dataf["wind"])
+
+    dataf = dataf.join(pd.get_dummies(dataf["weather"]))
+    dataf = dataf.drop('weather', axis=1)
+
+    weather_only_in_train = ['xydy', 'xq']
+    for el in weather_only_in_train:
+        if el not in dataf:
+            dataf[el] = 0
+
+    weather_cols = ['dy', 'dyq', 'q', 'qdy', 'xq', 'xydy']
+    dataf = dataf.rename(lambda x: 'weather_' + x if x in weather_cols else x, axis=1)
+
     return dataf
-    
