@@ -122,57 +122,75 @@ Project Organization
 ------------
 
     ├── LICENSE
+    ├── .dvc               <- Folder for the Data Version Control
+    ├── .git               <- Folder for all the GIT Settings [including more subfolders]
     ├── Makefile           <- Makefile with commands like `make data` or `make train`
     ├── README.md          <- The top-level README for developers using this project.
-    ├── data
-    │   ├── external       <- Data from third party sources.
-    │   ├── interim        <- Intermediate data that has been transformed.
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    |   |   |___  15_to_one_df          <- preprocessed data for light gbm approach [via feature/#-15 preprocess data]
-    |   |   |                              [no features added]
-    |   |   |___  Multiclass_Approach   <- preprocessed data for multiclass approaches [37_BaselineModell_SVM]
-    |   |   |                              [no features added]
-    |   |   |___  Test_Train_Splits     <- Folders with the SID of the k-fold splits [5-fold, ...]
+    ├── data               <- folder that holds all data used in this project
+    │   │   
+    │   ├── raw            <- The original, immutable data dump.
+    │   │   ├─── data_set_phase1        <- the original, untouched data from phase 1
+    │   │   └─── data_set_phase1_joined <- the original train- & testdata merged into a single DF, 
+    │   │                                  without any external features, but with internal created features
+    │   │
+    │   ├── external       <- Data from third party sources, that were not from the datacompetition itself
+    │   │   ├─── KDD_extern_processed   <- DF from other repositiories used for feature engineering inspiration
+    |   |   └─── external_features      <- dataframe to add external features [subway stations, national holidays...]
     |   |
-    │   └── raw            <- The original, immutable data dump.
+    │   ├── processed      <- The final, canonical data sets for modeling.
+    │   │   ├─── Test_Train_Splits      <- SIDs used for splitting the data for CV [5fold, 10fold, ...]
+    │   │   ├─── Ranking                <- all dataframes that can be used for training Ranking Models [TFRanking, LamdaRank,...]
+    |   |   └─── multiclass             <- dataframes to train multiclass classifier
+    |   |                                  [also contains subfolders w/ names of the special preprocessing applied]
+    │   │  
+    │   └── interim        <- Intermediate data that has been transformed.
     │
     ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
     │
-    ├── environments       <- Folder for all different conda environments e.g. PyTorch, TFRanking, Light-GBM
+    ├── environments       <- Folder for all different conda environments e.g. for TFRanking, Light-GBM, Multiclass Approach...
+    │                         [all saved as '.yml' file]
     │    
     ├── models             <- Trained and serialized models, model predictions, or model summaries
+    │   │                     --> each folder w/ subfolder of the name with the DF used to do the CV
+    │   │                     [summary.csv-files; predictions.csv-files; finalmodel.pickle-files]
+    │   │  
+    │   ├── lgb_multi      <- all trained models, CV Predicitons and summaries for the Light-GBM MulticlassApproach
+    │   ├── multiclass     <- all trained models, CV Predicitons and summaries for the Multiclass Approaches
+    │   ├── stacking       <- all trained models, CV Predicitons and summaries for the stacked Approach
+    │   └── ranking        <- all trained models, CV Predicitons and summaries for the Ranking Approaches
     │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `1.0-jqp-initial-data-exploration`.
+    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering), the creator's initials
+    │                         and a short `-` delimited description, e.g. `1.0-jqp-initial-data-exploration`.
+    |                         [just explorative & experimental]
     |
-    |___ submissions       <- submission files [SID, y_hat] as .csv
+    ├── submissions        <- submission files as .csv [SID, y_hat]
+    |                         naming convention: Name of model & date e.g. 'lamdarank_04_06'
     │
     ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
     │
     ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting
+    │   │ 
+    │   └── figures        <- Generated graphics and figures to be used in reporting
     │
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
     │
     ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
+    │
     ├── src                <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes src a Python module
+    │   ├── __init__.py    <- Makes src a Python module
     │   │
-    │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
+    │   ├── data           <- Scripts to download or generate data
     │   │
-    │   ├── features       <- Scripts to turn raw data into features for modeling
-    │   │   └── build_features.py
+    │   ├── features       <- Scripts to add (external) features  to merged_raw_data 
+    │   │   ├── add_features.py
+    │   │   └── build_features.py
     │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
+    │   ├── models         <- Scripts to train models and to use trained models to make
+    │   │                     predictions [each mpodel type an own subfolder]
     │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
+    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
+    │       └── visualize.py
     │
     └── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
 
