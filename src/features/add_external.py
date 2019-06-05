@@ -33,11 +33,14 @@ def main():
     print("Added all features in df_train")
     df_train.to_pickle("data/external_features/train_external.pickle")
 
+    '''
     print("Adding features in df_test")
     df_test = add_features(df_test)
 
     print("Added all features in df_test")
     df_test.to_pickle("data/external_features/test_external.pickle")
-
+    '''
+    
+    return
 if __name__ == "__main__":
     main()

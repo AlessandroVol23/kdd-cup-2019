@@ -262,13 +262,12 @@ def main(absolute_path_data_folder, df_mode, plan_mode):
     
     print("traindf: creating raw features for df_train")
     df_train = raw_preprocessing(df_train_queries, df_train_plans, df_profiles, clickdf=df_train_clicks, df_mode=df_mode, plan_mode=plan_mode)
-    print("Writing train to pickle in ../data/processed_raw/")
     write_data(absolute_path_data_folder, df_train, 'train', df_mode, plan_mode)
 
+    return
     print("\n")
     print("testdf_ creating raw features for df_test")
     df_test = raw_preprocessing(df_test_queries, df_test_plans, df_profiles, df_mode=df_mode, plan_mode=plan_mode)
-    print("Writing test to pickle in ../data/processed_raw/")
     write_data(absolute_path_data_folder, df_test, 'test', df_mode, plan_mode)
 
     return

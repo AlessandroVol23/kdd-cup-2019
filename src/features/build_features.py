@@ -153,6 +153,7 @@ def add_weather_features(dataf, type='req'):
     dataf["wind"]     = pd.to_numeric(dataf["wind"])
 
     dataf = dataf.join(pd.get_dummies(dataf["weather"]))
+    dataf = dataf.drop('weather', axis=1)
 
     weather_only_in_train = ['xydy', 'xq']
     for el in weather_only_in_train:
