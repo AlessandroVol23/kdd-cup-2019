@@ -4,9 +4,14 @@ from sklearn.datasets import dump_svmlight_file
 import pickle
 import click
 
+
 def create_svm_file(df, features_X, path):
     """
     This function saves the dataframe as lib svm file.
+    :df: Pandas DataFrame to convert into libsvm file.
+    :features_X: Feature list to take from df. These features have to exist in df
+    :path: Path to save the file.
+    :returns X, y
     """
     df.sort_values("sid", inplace=True)
 
@@ -27,25 +32,30 @@ def create_svm_file(df, features_X, path):
     dump_svmlight_file(X=X, y=y, f=path, query_id=query_id, zero_based=False)
     return X, y
 
+
 @click.command()
+@click.argument("path_train_file", type=click.Path(exists=True))
+@click.argument("path_test_file", type=click.Path(exists=True))
+@click.argument("path_feature_file", type=click.Path(exists=True))
 @click.argument("output_path_train")
 @click.argument("output_path_test")
-def main(output_path_train, output_path_test):
+def main(path_train_file, path_test_file, path_feature_file, output_path_train, output_path_test):
     import os
     print(os.getcwd())
-    df_train = pd.read_pickle('../../../data/interim/Train_extern_git_feat_pid_-1.pickle')
-    df_test = pd.read_pickle('../../../data/interim/Test_extern_git_feat_pid_-1.pickle')
+    df_train = pd.read_pickle(path_train_file)
+    df_test = pd.read_pickle(path_test_file)
 
     print("Loaded df_train with shape: ", df_train.shape)
     print("Loaded df_test with shape: ", df_test.shape)
 
-    with open('../../../data/interim/features_pid_all.pickle', 'rb') as fp:
+    with open(path_feature_file, 'rb') as fp:
         features = pickle.load(fp)
 
     print("Create for df_train")
     train_X, train_y = create_svm_file(df_train, features, output_path_train)
     print("create for df test")
     test_X, test_y = create_svm_file(df_test, features, output_path_test)
+
 
 if __name__ == "__main__":
     main()
