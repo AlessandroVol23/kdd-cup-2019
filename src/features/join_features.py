@@ -17,6 +17,8 @@ def main():
 
     print("Processing pickles")
     for pick in os.listdir(inpath):
+        if 'row' or 'test' in pick:
+            continue
         print("Reading: " + pick)
         df = pd.read_pickle(os.path.join(inpath, pick))
         print("Before: " + str(df.shape[0]) + ", " + str(df.shape[1]))
@@ -25,7 +27,6 @@ def main():
             newdf = pd.merge(df, exttrain)
         elif 'test' in pick:
             #newdf = pd.merge(df, exttest)
-            continue
         newdf = newdf.drop('click_time', axis=1)
         print("After: " + str(newdf.shape[0]) + ", " + str(newdf.shape[1]))
         outpick = pick.replace('raw', 'all')
