@@ -27,6 +27,7 @@ def main():
             newdf = pd.merge(df, exttrain)
         elif 'test' in pick:
             #newdf = pd.merge(df, exttest)
+            pass
         newdf = newdf.drop('click_time', axis=1)
         print("After: " + str(newdf.shape[0]) + ", " + str(newdf.shape[1]))
         outpick = pick.replace('raw', 'all')

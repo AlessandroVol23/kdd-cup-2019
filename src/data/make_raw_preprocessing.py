@@ -94,7 +94,7 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
 
         return df_plans, df_clicks, df_queries
 
-    def join_data_sets(df_plans, df_clicks, df_queries, df_mode):
+    def join_data_sets(df_plans, df_clicks, df_queries, df_profiles, df_mode):
         """
             This function joins all datasets together.
         """
@@ -106,11 +106,9 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
             else:
                 df = df_queries.copy()
             
-            ''' deprecated
             # adds 66 columns
             df = pd.merge(df, df_profiles, how='outer')
             df = df[pd.notnull(df['o_long'])]
-            '''
             
             # adds 2 columns
             df = pd.merge(df, df_plans, how='outer')
@@ -128,11 +126,9 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
             print("Wrong df_mode, try with 'col' or 'row'")
             sys.exit(-1)
         
-        '''
         df.pid = df.pid.apply(lambda x: 0 if np.isnan(x) else x)
         for i in range(66):
             df['p'+str(i)] = df['p'+str(i)].apply(lambda x: -1 if np.isnan(x) else x)
-        '''
 
         return df
 
@@ -221,10 +217,7 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
                 else:
                     df.at[i,'price_' + str(pl['transport_mode'])] = 99999
                 df.at[i,'eta_' + str(pl['transport_mode'])] = pl['eta']
-        print("\n")
         return df
-
-    # END OF DEPRECATED
 
     def gen_plan_feas(data, col_name='plans'):
         n = data.shape[0]
@@ -353,7 +346,7 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
         mode_svd.columns = ['svd_mode_{}'.format(i) for i in range(10)]
         data = pd.concat([data, feature_data, mode_svd], axis=1)
             
-        data = data.drop([col_name], axis=1)
+        #data = data.drop([col_name], axis=1)
         return data
 
     def gen_profile_feas(data, profile_data):
@@ -367,27 +360,39 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
         data = data.merge(svd_feas, on='pid', how='left')
         return data
 
+    def gen_time_feas(data):
+        data['req_time'] = pd.to_datetime(data['req_time'])
+        data['weekday'] = data['req_time'].dt.dayofweek
+        data['hour'] = data['req_time'].dt.hour
+        return data
+
+    def split_train_test(df):
+        mask = df['req_time'] >= '2018-11-14'
+        train = df[~mask]
+        test = df[mask]
+        train = train.drop(['req_time'], axis=1)
+        test = test.drop(['req_time'], axis=1)
+        return (train, test)
+
     '''
     **********************
     Preprocessing pipeline
     **********************
     '''
 
-    print("Preprocessing coordinates")
+    print("1. Preprocessing coordinates and time")
     df = preprocess_coordinates(df)
+    df = gen_time_feas(df)
 
-    # DEPRECATED
     if df_mode == 'col':
-        print("Preprocessing df in 'col' mode")
+        print("2. Preprocessing df in 'col' mode")
         plandf, clickdf, df = preprocess_datatypes(plandf, clickdf, df)
-        print("Generating profile features")
+        print("3. Generating profile features")
         df = gen_profile_feas(df, profiledf)
-        df = join_data_sets(plandf, clickdf, df, df_mode)
-
-        # NEW WITH GITHUB'S CODE
+        df = join_data_sets(plandf, clickdf, df, profiledf, df_mode)
+        print("4. Generating plan features")
         df = gen_plan_feas(df, col_name='plans')
         
-        ''' DEPRECATED
         num_modes = 12
         modes = []
         for i in range(num_modes):
@@ -397,40 +402,42 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
 
         df = initialize_plan_cols(df, modes)
         if plan_mode == 'first':
-            print("Preprocessing plans in 'first' mode")
+            print("5. Preprocessing plans in 'first' mode")
             df = preprocess_plans_first(df)
         elif plan_mode == 'last':
-            print("Preprocessing plans in 'last' mode")
+            print("5. Preprocessing plans in 'last' mode")
             df = preprocess_plans_last(df)
         else:
             print("ERROR: wrong plan mode. Try with 'first' or 'last'.")
             sys.exit(1)
-        '''
 
     elif df_mode == 'row':
-        print("Preprocessing df in 'row' mode")
+        print("2. Preprocessing df in 'row' mode")
         df0 = df.merge(plandf, on='sid', how='left')
-        print("Generating profile features")
+        print("3. Generating profile features")
         df0 = gen_profile_feas(df0, profiledf)
+        print("4. Generating plan features")
         df_with_plans = gen_plan_feas(df0)
+        print("5. Unstacking plans into rows")
         df_plans_pp = unstack_plans(plandf)
         df_plans_pp, clickdf, df = preprocess_datatypes(df_plans_pp, clickdf, df)
-        df = join_data_sets(df_plans_pp, clickdf, df_with_plans, df_mode)
+        df = join_data_sets(df_plans_pp, clickdf, df_with_plans, profiledf, df_mode)
         df = fill_missing_price(df)
     else:
         print("Wrong df mode, try with 'row' or 'col'")
         sys.exit(-1)
 
     if 'click_mode' in df:
-        print("Preprocessing click_mode")
+        print("6. Preprocessing click_mode")
         df.click_mode = df.click_mode.apply(lambda x: 0 if np.isnan(x) else x)
 
-    '''deprecated
     if 'plans' in df:
         df = df.drop('plans', axis=1)
-    '''
+    
+    print("7. Split train and test")
+    traindf, testdf = split_train_test(df)
 
-    return df
+    return (traindf, testdf)
 
 @click.command()
 @click.argument("absolute_path_data_folder")
@@ -442,8 +449,9 @@ def main(absolute_path_data_folder, df_mode, plan_mode):
     # df_test_queries, df_test_plans = read_in_test_data(absolute_raw_data_path)
     
     print("traindf: creating raw features for df_train")
-    df_train = raw_preprocessing(df_train_queries, df_train_plans, df_profiles, clickdf=df_train_clicks, df_mode=df_mode, plan_mode=plan_mode)
-    write_data(absolute_path_data_folder, df_train, 'train', df_mode, plan_mode)
+    df_tr_train, df_tr_test = raw_preprocessing(df_train_queries, df_train_plans, df_profiles, clickdf=df_train_clicks, df_mode=df_mode, plan_mode=plan_mode)
+    write_data(absolute_path_data_folder, df_tr_train, 'train', df_mode, plan_mode)
+    write_data(absolute_path_data_folder, df_tr_test, 'test', df_mode, plan_mode)
 
     return
     '''DEPRECATED
