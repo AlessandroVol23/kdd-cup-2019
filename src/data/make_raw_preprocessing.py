@@ -313,7 +313,7 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
                 min_eta_mode[i] = mode_list[eta_sort_idx[0]]
 
         feature_data = pd.DataFrame(mode_list_feas)
-        feature_data.columns = ['mode_feas_{}'.format(i) for i in range(12)]
+        feature_data.columns = ['mode_{}_available'.format(i) for i in range(12)]
         feature_data['max_dist'] = max_dist
         feature_data['min_dist'] = min_dist
         feature_data['mean_dist'] = mean_dist
@@ -343,7 +343,7 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
         svd_enc = TruncatedSVD(n_components=10, n_iter=20, random_state=2019)
         mode_svd = svd_enc.fit_transform(tfidf_vec)
         mode_svd = pd.DataFrame(mode_svd)
-        mode_svd.columns = ['svd_mode_{}'.format(i) for i in range(10)]
+        mode_svd.columns = ['TFIDF_clustered_{}'.format(i) for i in range(10)]
         data = pd.concat([data, feature_data, mode_svd], axis=1)
             
         #data = data.drop([col_name], axis=1)
@@ -354,10 +354,13 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
         svd = TruncatedSVD(n_components=20, n_iter=20, random_state=2019)
         svd_x = svd.fit_transform(x)
         svd_feas = pd.DataFrame(svd_x)
-        svd_feas.columns = ['svd_fea_{}'.format(i) for i in range(20)]
+        newcols = ['PID_MainComp_{}'.format(i) for i in range(20)]
+        svd_feas.columns = newcols
         svd_feas['pid'] = profile_data['pid'].values
         data['pid'] = data['pid'].fillna(-1)
         data = data.merge(svd_feas, on='pid', how='left')
+        for svd_mode in newcols:
+            data[svd_mode] = data.apply(lambda x: -1 if x.pid == -1 else x[svd_mode], axis=1)
         return data
 
     def gen_time_feas(data):
@@ -366,13 +369,19 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
         data['hour'] = data['req_time'].dt.hour
         return data
 
-    def split_train_test(df):
+    def split_train_test_by_col(df):
         mask = df['req_time'] >= '2018-11-14'
         train = df[~mask]
         test = df[mask]
         train = train.drop(['req_time'], axis=1)
         test = test.drop(['req_time'], axis=1)
         return (train, test)
+
+    def split_train_test_by_row(df):
+        limit = int(0.8*df.shape[0])
+        traindf = df.head(limit)
+        testdf = df.tail(len(df) - limit)
+        return traindf, testdf
 
     '''
     **********************
@@ -430,12 +439,15 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
     if 'click_mode' in df:
         print("6. Preprocessing click_mode")
         df.click_mode = df.click_mode.apply(lambda x: 0 if np.isnan(x) else x)
+        df['Response'] = df.click_mode
 
     if 'plans' in df:
         df = df.drop('plans', axis=1)
     
     print("7. Split train and test")
-    traindf, testdf = split_train_test(df)
+    print(str(df.shape[0]), str(df.shape[1]))
+    #traindf, testdf = split_train_test_by_col(df)
+    traindf, testdf = split_train_test_by_row(df)
 
     return (traindf, testdf)
 

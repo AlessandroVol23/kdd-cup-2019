@@ -160,4 +160,7 @@ def add_weather_features(dataf, type='req'):
         if el not in dataf:
             dataf[el] = 0
 
+    weather_cols = ['dy', 'dyq', 'q', 'qdy', 'xq', 'xydy']
+    dataf = dataf.rename(lambda x: 'weather_' + x if x in weather_cols else x, axis=1)
+
     return dataf

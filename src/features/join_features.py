@@ -6,11 +6,9 @@ import sys
 def main():
     
     print("Reading external dataframes")
-    exttrain = pd.read_pickle('data/external_features/train_external.pickle')
-    exttest = pd.read_pickle('data/external_features/test_external.pickle')
+    ext = pd.read_pickle('data/external_features/external.pickle')
 
-    exttrain = exttrain.drop(['pid', 'req_time'], axis=1)
-    exttest = exttest.drop(['pid', 'req_time'], axis=1)
+    ext = ext.drop(['pid', 'req_time'], axis=1)
     
     inpath = 'data/processed_raw'
     outpath = 'data/processed_all'
@@ -22,12 +20,7 @@ def main():
         print("Reading: " + pick)
         df = pd.read_pickle(os.path.join(inpath, pick))
         print("Before: " + str(df.shape[0]) + ", " + str(df.shape[1]))
-        print("Merging: " + pick)
-        if 'train' in pick:
-            newdf = pd.merge(df, exttrain)
-        elif 'test' in pick:
-            newdf = pd.merge(df, exttest)
-        newdf = newdf.drop('click_time', axis=1)
+        newdf = pd.merge(df, ext, how='inner')
         print("After: " + str(newdf.shape[0]) + ", " + str(newdf.shape[1]))
         outpick = pick.replace('raw', 'all')
         print("Writing: " + outpick)
