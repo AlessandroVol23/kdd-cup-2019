@@ -1,8 +1,0 @@
-wdir: .
-outs:
-- path: submissions
-  metric: false
-  cache: true
-  persist: false
-  md5: ae6bc8f04fcdf823da9409c384268555.dir
-md5: ce4bdefba7b1d3777f9650c721910368

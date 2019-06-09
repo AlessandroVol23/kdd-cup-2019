@@ -2,44 +2,6 @@ kdd-cup-2019
 ==============================
 This is the repository for the Big Data Science practical course @ LMU.
 
-## Data Preprocessing
-
-In ./src/data you'll find the ``make_dataset.py`` script. This script takes the files from the input parameter and creates one concatenated and joined file with which you can train your ML model. 
-
-__1. Create conda environment__
-
-In ``./environments/`` you'll find the yml file ``preprocessing_kdd.yml``. 
-
-Create a new conda env with:
-
-```shell
-conda env create -f ./environments/preprocessing_kdd.yml
-```
-
-__2. Activate conda environment__
-
-```shell
-conda activate preprocessing_kdd
-```
-
-__3. Execute preprocessing script__
-
-```shell
-python ./src/data/make_dataset.py /path/to/kdd-cup-2019/data/raw/ /path/to/kdd-cup-2019/data/processed/YOUR_FILE.pickle TRAIN_OR_TEST
-```
-
-After executing the script you see some output, wait until it says "Preprocessing Done!"
-
-## Features
-
-You can add all features by running `../src/features/add_features.py`, or add them individually:
-
-If you have library problems, install them:
-
-```bash
-pip install geopandas
-```
-
 ### Raw preprocessing
 
 For the initial raw preprocessing with features (no external), run this file in `../kdd-cup-2019`. Choose `first` or `last` depending on which transport mode you prefer to pick, the one displayed first in the plan list or last.
@@ -90,19 +52,19 @@ df_test = add_dist_nearest_subway(df_test)
 # Add sys to sys path to import custom modules from source
 import sys
 sys.path.append("../src/")
-<<<<<<< README.md
 ```
 
-# Import custome function save model
+### Import custom function save model
+```python
 from src.models.utils import save_model
 save_model(lgb_model, "../models/test_model.pickle")
-# Be careful! The path varies of course.
-# It is just allowed to save models in the models folder
 ```
+__Be careful! The path varies of course.__
+
 
 ### Light GBM Multiclass Baseline Model
 
-The model is saved in `models/lgbmodel_2k.pickle`. You can load it with:
+The model is saved in `models/lgbmodel_2k.pickle`. You can load it with (if it is in DVC again):
 
 ```python
 # Add sys to sys path to import custom modules from source
@@ -113,6 +75,16 @@ sys.path.append("../src/")
 from src.models.utils import load_model
 lgb_model = load_model("../models/lgbmodel_2k.pickle")
 ```
+
+You can execute the script to train a model: 
+There is a conda environment in `environments/lgb_baseline.yml`
+
+The script command is: (from repo root) 
+```bash
+ python src/models/lgbm_multiclass_baseline/lgbm_mc_bl.py <PATH_TRAIN_FILE> <PATH_TEST_FILE> <PATH_FEATURE_LIST> <NAME> <SAMPLE_MODE> <SAMPLE_AMOUNT>
+```
+
+You can enter max six different sample modes. Feature list is just a pickle file which is a python list with all feature names to take from train and test file.
 
 ## Project description
 
