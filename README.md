@@ -129,30 +129,40 @@ Project Organization
     ├── data               <- folder that holds all data used in this project
     │   │   
     │   ├── raw            <- The original, immutable data dump.
-    │   │   ├─── data_set_phase1        <- the original, untouched data from phase 1
-    │   │   └─── data_set_phase1_joined <- the original train- & testdata merged into a single DF, 
-    │   │                                  without any external features, but with internal created features
+    │   │   └─── data_set_phase1        <- the original, untouched data from phase 1
+    │   │                                  [multiple DFs, that are merged to one big DF (s. 'Processed')]
     │   │
-    │   ├── external       <- Data from third party sources, that were not from the datacompetition itself
-    │   │   ├─── KDD_extern_processed   <- DF from other repositiories used for feature engineering inspiration
-    |   |   └─── external_features      <- dataframe to add external features [subway stations, national holidays...]
-    |   |
+    │   ├── external       <- Data from third party sources, that were not from the KDD-DataCompetition itself
+    │   │   └─── external_features      <- dataframes with external Informations
+    │   │                                  [e.g. coordinates of subway stations, national holidays, ...]
+    │   │
     │   ├── processed      <- The final, canonical data sets for modeling.
-    │   │   ├─── Test_Train_Splits      <- SIDs used for splitting the data for CV [5fold, 10fold, ...]
+    │   │   ├─── Test_Train_Splits      <- SIDs used for splitting the data for CV
+    │   │   │                              [has subfolders like: '5fold', '10fold', ... (corresponding to the CV-Tactic)]
     │   │   ├─── Ranking                <- all dataframes that can be used for training Ranking Models [TFRanking, LamdaRank,...]
-    |   |   └─── multiclass             <- dataframes to train multiclass classifier
-    |   |                                  [also contains subfolders w/ names of the special preprocessing applied]
+    │   │   │       └─── subfolder      <- subfolder for different created Dataframes
+    │   │   │                              [naming convention - date of creation --> easier to track it]
+    │   │   └─── multiclass             <- dataframes to train multiclass classifier
+    │   │           └─── subfolder      <- subfolder for different created Dataframes
+    │   │                                  [naming convention - date of creation --> easier to track it]
     │   │  
     │   └── interim        <- Intermediate data that has been transformed.
     │
     ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
     │
-    ├── environments       <- Folder for all different conda environments e.g. for TFRanking, Light-GBM, Multiclass Approach...
-    │                         [all saved as '.yml' file]
+    ├── environments       <- Folder for all different conda environments 
+    │                         e.g. for TFRanking, Light-GBM, Multiclass Approach... [all saved as '.yml' file]
     │    
     ├── models             <- Trained and serialized models, model predictions, or model summaries
-    │   │                     --> each folder w/ subfolder of the name with the DF used to do the CV
-    │   │                     [summary.csv-files; predictions.csv-files; finalmodel.pickle-files]
+    │   │                     all folder contain the: - summary files (.csv) [performance measures, settings, feature names ...]
+    │   │                                             - the prediciton files (.csv) [CV-Predicitons used for stacking]
+    │   │                                                      └──> should contain fold, SID, and Predicition Columns
+    │   │                                                                            └──> fold = 1 --> fold 2, 3, 4, 5 were used to train
+    │   │                                                                                              and then predicitons done in fold 1
+    │   │                                             - finalmodel (.pickle) the final model that was trained on all trainpoints
+    │   │                    
+    │   │                     !!! Take care, that summaries, final_model and predicitons do have names !!!
+    │   │                         [e.g. 'pred1', 'finalModel1', 'summary1']
     │   │  
     │   ├── lgb_multi      <- all trained models, CV Predicitons and summaries for the Light-GBM MulticlassApproach
     │   ├── multiclass     <- all trained models, CV Predicitons and summaries for the Multiclass Approaches
@@ -169,8 +179,7 @@ Project Organization
     ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
     │
     ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   │ 
-    │   └── figures        <- Generated graphics and figures to be used in reporting
+    │   └── figures           <- Generated graphics and figures to be used in reporting
     │
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
@@ -182,12 +191,13 @@ Project Organization
     │   │
     │   ├── data           <- Scripts to download or generate data
     │   │
-    │   ├── features       <- Scripts to add (external) features  to merged_raw_data 
+    │   ├── features       <- Scripts to add (external) features & to merged_raw_data 
     │   │   ├── add_features.py
     │   │   └── build_features.py
     │   │
     │   ├── models         <- Scripts to train models and to use trained models to make
     │   │                     predictions [each mpodel type an own subfolder]
+    │   │                     [plus each script needs andescribtion in the README]
     │   │
     │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
     │       └── visualize.py
