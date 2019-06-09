@@ -96,3 +96,5 @@ pandas/
 submissions/
 
 /submissions
+models/
+*.csv
