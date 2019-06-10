@@ -2,45 +2,7 @@ kdd-cup-2019
 ==============================
 This is the repository for the Big Data Science practical course @ LMU.
 
-## Data Preprocessing
-
-In ./src/data you'll find the ``make_dataset.py`` script. This script takes the files from the input parameter and creates one concatenated and joined file with which you can train your ML model. 
-
-__1. Create conda environment__
-
-In ``./environments/`` you'll find the yml file ``preprocessing_kdd.yml``. 
-
-Create a new conda env with:
-
-```shell
-conda env create -f ./environments/preprocessing_kdd.yml
-```
-
-__2. Activate conda environment__
-
-```shell
-conda activate preprocessing_kdd
-```
-
-__3. Execute preprocessing script__
-
-```shell
-python ./src/data/make_dataset.py /path/to/kdd-cup-2019/data/raw/ /path/to/kdd-cup-2019/data/processed/YOUR_FILE.pickle TRAIN_OR_TEST
-```
-
-After executing the script you see some output, wait until it says "Preprocessing Done!"
-
-## Features
-
-You can add all features by running `../src/features/add_features.py`, or add them individually:
-
-If you have library problems, install them:
-
-```bash
-pip install geopandas
-```
-
-### Raw preprocessing
+## Raw preprocessing
 
 For the initial raw preprocessing with features (no external), run this file in `../kdd-cup-2019`. 
 
@@ -59,7 +21,7 @@ This adds the 'raw' features:
 python ./src/data/make_raw_preprocessing.py /path/to/kdd-cup-2019/data 'col' 'first'
 ```
 
-### External features preprocessing
+## External features preprocessing
 
 This adds the external features:
 
@@ -72,11 +34,9 @@ This adds the external features:
 python ./src/features/add_external.py
 ```
 
-### Join
+# Models
 
-## Models
-
-### How to save a model?
+## How to save a model?
 
 ```python
 # Add sys to sys path to import custom modules from source
@@ -85,7 +45,7 @@ sys.path.append("../src/")
 <<<<<<< README.md
 ```
 
-# Import custome function save model
+### Import custome function save model
 ```python
 from src.models.utils import save_model
 save_model(lgb_model, "../models/test_model.pickle")
