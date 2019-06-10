@@ -15,8 +15,6 @@ def main():
 
     print("Processing pickles")
     for pick in os.listdir(inpath):
-        if 'row' in pick:
-            continue
         print("Reading: " + pick)
         df = pd.read_pickle(os.path.join(inpath, pick))
         print("Before: " + str(df.shape[0]) + ", " + str(df.shape[1]))

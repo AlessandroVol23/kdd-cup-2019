@@ -127,8 +127,9 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
             sys.exit(-1)
         
         df.pid = df.pid.apply(lambda x: 0 if np.isnan(x) else x)
-        for i in range(66):
-            df['p'+str(i)] = df['p'+str(i)].apply(lambda x: -1 if np.isnan(x) else x)
+        if df_mode == 'col':
+            for i in range(66):
+                df['p'+str(i)] = df['p'+str(i)].apply(lambda x: -1 if np.isnan(x) else x)
 
         return df
 
@@ -159,6 +160,7 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
         """
             This function fills all missing values in price with the median value. 
         """
+        df.price = pd.to_numeric(df.price)
         df.loc[df.price.isna(), "price"] = df.price.median()
         return df
 
@@ -429,7 +431,7 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
         df_with_plans = gen_plan_feas(df0)
         print("5. Unstacking plans into rows")
         df_plans_pp = unstack_plans(plandf)
-        df_plans_pp, clickdf, df = preprocess_datatypes(df_plans_pp, clickdf, df)
+        df_plans_pp, clickdf, df_with_plans = preprocess_datatypes(df_plans_pp, clickdf, df_with_plans)
         df = join_data_sets(df_plans_pp, clickdf, df_with_plans, profiledf, df_mode)
         df = fill_missing_price(df)
     else:
