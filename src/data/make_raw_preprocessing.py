@@ -16,8 +16,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 def read_in_train_data(absolute_raw_data_path):
     """
-        This function reads in all the data sets.
-        returns: df_train_queries, df_train_plans, df_train_clicks, df_test_queries, df_test_queries, df_test_plans, df_profiles
+        This function reads in all the train data sets.
+        returns: df_train_queries, df_train_plans, df_train_clicks, id_profiles
     """
 
     data_set_path = os.path.join(absolute_raw_data_path, 'raw/data_set_phase1')
@@ -30,7 +30,10 @@ def read_in_train_data(absolute_raw_data_path):
     return (df_profiles, df_train_queries, df_train_plans, df_train_clicks)
 
 def read_in_test_data(absolute_raw_data_path):
-
+    """
+    This function reads in all the test data sets.
+    returns: df_test_queries, df_test_plans
+    """
     data_set_path = os.path.join(absolute_raw_data_path, 'raw/data_set_phase1')
     df_test_queries = pd.read_csv(os.path.join(data_set_path, "test_queries.csv"))
     df_test_plans = pd.read_csv(os.path.join(data_set_path, "test_plans.csv"))
@@ -350,6 +353,9 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
         return data
 
     def gen_profile_feas(data, profile_data):
+        
+        # add "-1" as new PID, that has "-1" on all p0,...p65
+        profile_data.loc[len(profile_data)] = list(np.repeat(-1, 67))
         x = profile_data.drop(['pid'], axis=1).values
         svd = TruncatedSVD(n_components=20, n_iter=20, random_state=2019)
         svd_x = svd.fit_transform(x)
