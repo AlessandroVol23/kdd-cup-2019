@@ -384,6 +384,7 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
         return (train, test)
 
     def split_train_test_by_row(df):
+        df.sort_values(by=['req_time'], inplace=True)
         limit = int(0.8*df.shape[0])
         traindf = df.head(limit)
         testdf = df.tail(len(df) - limit)
