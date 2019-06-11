@@ -367,8 +367,6 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
         svd_feas['pid'] = profile_data['pid'].values
         data['pid'] = data['pid'].fillna(-1)
         data = data.merge(svd_feas, on='pid', how='left')
-        for svd_mode in newcols:
-            data[svd_mode] = data.apply(lambda x: -1 if x.pid == -1 else x[svd_mode], axis=1)
         return data
 
     def gen_time_feas(data):
