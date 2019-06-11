@@ -75,6 +75,50 @@ sys.path.append("../src/")
 from src.models.utils import load_model
 lgb_model = load_model("../models/lgbmodel_2k.pickle")
 ```
+You can execute the script to train a model: 
+There is a conda environment in `environments/lgb_baseline.yml`
+
+The script command is: (from repo root) 
+```bash
+ python src/models/lgbm_multiclass_baseline/lgbm_mc_bl.py <PATH_TRAIN_FILE> <PATH_TEST_FILE> <PATH_FEATURE_LIST> <NAME> <SAMPLE_MODE> <SAMPLE_AMOUNT>
+```
+
+You can enter max six different sample modes. Feature list is just a pickle file which is a python list with all feature names to take from train and test file.
+
+## README for the Stacking:
+
+#### OBACHT
+Script is not completly ready to run, will be finished by Denny ASAP
+
+
+#### Function is in src/models/stacking and called "fit_stacking_model"
+
+Args:
+ - datafolder (string) : 
+   folder, that holds all modelpredicitons (from other models) we want to use as feas to do predicitons on e.g. "models/Multivariate Approach/merged_dfs/knn"
+   Assumptions to the DFs: DF with layout for multiclass learning 
+                           DF shall contain   a "Respond" Column,
+                                              a "sid"     Column,
+                                          &   all 'features_stack'
+                          features_stack in this case are the predictions of
+                          the submodells the stacked model builds on!
+
+            --> Upcoming in the next version (hopefully)
+                removing the CV Argument and assume a "fold" column
+                        in the dataframes in the datafolder
+        
+ - model (sklearn) : model, that we use as stacked model [multiclass model!] must have: 'predict' & 'fit method'
+                     e.g. sklearn.ensemble.RandomForestClassifier(criterion = 'entropy', n_estimators = 25,
+                                                                  random_state = 1, n_jobs = 2)
+
+ - CV (folder)     : folder that holds the single (pickle)-files with folds used for CV
+                     e.g."data/processed/Test_Train_Splits/5-fold"
+                  
+- add_feas (list) : list of strings, that define, whether additional features shall be used
+                    [need to be in "data/processed/multiclass/with_SVD_20/train_all_first.pickle"-DF]
+                          
+- scaled (boolean) : Shall the features be scaled? 
+
 
 You can execute the script to train a model: 
 There is a conda environment in `environments/lgb_baseline.yml`
