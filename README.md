@@ -153,13 +153,13 @@ Project Organization
     │   │                                  [e.g. coordinates of subway stations, national holidays, ...]
     │   │
     │   ├── processed      <- The final, canonical data sets for modeling.
-    │   │   ├─── Test_Train_Splits      <- SIDs used for splitting the data for CV
+    │   │   ├─── split_test_train       <- SIDs used for splitting the data for CV
     │   │   │                              [has subfolders like: '5fold', '10fold', ... (corresponding to the CV-Tactic)]
-    │   │   ├─── Ranking                <- all dataframes that can be used for training Ranking Models [TFRanking, LamdaRank,...]
-    │   │   │       └─── subfolder      <- subfolder for different created Dataframes
+    │   │   ├─── ranking                <- all dataframes that can be used for training Ranking Models [TFRanking, LamdaRank,...]
+    │   │   │       └─── features       <-  different selected features for ranking
     │   │   │                              [naming convention - date of creation --> easier to track it]
     │   │   └─── multiclass             <- dataframes to train multiclass classifier
-    │   │           └─── subfolder      <- subfolder for different created Dataframes
+    │   │           └─── features       <- different selected features for multiclass
     │   │                                  [naming convention - date of creation --> easier to track it]
     │   │  
     │   └── interim        <- Intermediate data that has been transformed.

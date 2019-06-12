@@ -1,3 +1,5 @@
-/external
-/processed
-mlruns/
+*.txt
+*.csv
+*.pickle
+
+!*.dvc

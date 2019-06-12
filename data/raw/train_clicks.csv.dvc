@@ -1,0 +1,8 @@
+md5: 29b122781335163203179af5aab71c27
+wdir: .
+outs:
+- md5: 1ae866a662df6be138a708dcfe0b7fe3
+  path: train_clicks.csv
+  cache: true
+  metric: false
+  persist: false

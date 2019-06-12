@@ -1,0 +1,8 @@
+md5: 4d8735732d21923ecdf6b970c1050406
+wdir: .
+outs:
+- md5: 2bb39c681b3d2853d19af7427947bc40
+  path: SIDs_1.txt
+  cache: true
+  metric: false
+  persist: false
