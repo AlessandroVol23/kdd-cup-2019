@@ -18,7 +18,7 @@ def create_svm_file(df, features_X, path):
     # Create ranking target
     if 'click_mode' in df.columns:
         print("Build LTR labels")
-        df = df.assign(target=df.apply(lambda x: 1 if x.click_mode == x.transport_mode else 0, axis=1))
+        df = df.assign(target=df.apply(lambda x: 0 if x.click_mode == x.transport_mode else 100, axis=1))
     else:
         print("Assign label 0 for test set")
         df = df.assign(target=0)

@@ -2,6 +2,7 @@ import tensorflow as tf
 import tensorflow_ranking as tfr
 import pandas as pd
 from sklearn.metrics import f1_score
+import click
 
 tf.enable_eager_execution()
 tf.executing_eagerly()
@@ -10,14 +11,14 @@ tf.executing_eagerly()
 # As noted above, we will assume the data is in the LibSVM format
 # and that the content of each file is sorted by query ID.
 
-_TRAIN_DATA_PATH = "../data/interim/df_train_test.libsvm"
-_TEST_DATA_PATH = "../data/interim/df_train_test.libsvm"
+_TRAIN_DATA_PATH = ''
+_TEST_DATA_PATH = ''
 
 # Define a loss function. To find a complete list of available
 # loss functions or to learn how to add your own custom function
 # please refer to the tensorflow_ranking.losses module.
 _LOSS = "pairwise_logistic_loss"
-_LOSS = "sigmoid_cross_entropy_loss"
+# _LOSS = "sigmoid_cross_entropy_loss"
 
 # In the TF-Ranking framework, a training instance is represented
 # by a Tensor that contains features from a list of documents
@@ -34,10 +35,10 @@ _LIST_SIZE = 100
 # The total number of features per query-document pair.
 # We set this number to the number of features in the MSLR-Web30K
 # dataset.
-_NUM_FEATURES = 4
+_NUM_FEATURES = 90
 
 # Parameters to the scoring function.
-_BATCH_SIZE = 100
+_BATCH_SIZE = 1000
 _HIDDEN_LAYER_DIMS = ["20", "10"]
 
 
@@ -84,8 +85,6 @@ def make_score_fn():
             tf.layers.flatten(group_features[name])
             for name in sorted(example_feature_columns())
         ]
-        print("MAKE SCORE FUNCTION:")
-        print(example_input)
         input_layer = tf.concat(example_input, 1)
 
         cur_layer = input_layer
@@ -165,9 +164,9 @@ def ltr_to_submission(df, ranker, path):
     import numpy as np
     # Not sure how to get all preds because it runs infinit
     # So I take all till list size
-    preds_slice = itertools.islice(preds, len(df_train_test))
+    preds_slice = itertools.islice(preds, len(df))
     count = 0
-    a = np.zeros((len(df_train_test), _LIST_SIZE))
+    a = np.zeros((len(df), _LIST_SIZE))
 
     for i in preds_slice:
         a[count] = i
@@ -193,16 +192,32 @@ def ltr_to_submission(df, ranker, path):
 
     return df_end
 
+@click.command()
+@click.argument("path_train_svm", type=click.Path(exists=True))
+@click.argument("path_val_svm", type=click.Path(exists=True))
+@click.argument("path_train_df", type=click.Path(exists=True))
+@click.argument("path_val_df", type=click.Path(exists=True))
+def main(path_train_svm, path_val_svm, path_train_df, path_val_df):
+    
+    print("MAIN: Read in data")
+    df_train_train = pd.read_pickle(path_train_df)
+    df_train_test = pd.read_pickle(path_val_df)
 
-def main():
-    df_train_train = pd.read_pickle("data/interim/df_train_test.pickle")
-    df_train_test = pd.read_pickle("data/interim/df_train_test.pickle")
-
+    _TRAIN_DATA_PATH = path_train_svm
+    _TEST_DATA_PATH = path_val_svm
+    
+    print("MAIN: Create Ranker")
     hparams = tf.contrib.training.HParams(learning_rate=0.05)
     ranker = get_estimator(hparams)
-
+    
+    print("MAIN: Train Ranker")
     ranker.train(input_fn=lambda: input_fn(_TRAIN_DATA_PATH), steps=100)
+    
+    print("MAIN: LTR to submission")
+    df_preds = ltr_to_submission(df_train_train, ranker, path_train_svm)
 
-    df_preds = ltr_to_submission(df_train_train, ranker, '../data/interim/df_train_train.libsvm')
+    print(f1_score(df_train_train.groupby("sid").first()['click_mode'], df_preds.transport_mode, average='weighted'))
 
-    f1_score(df_train_train.groupby("sid").first()['click_mode'], df_preds.transport_mode, average='weighted')
+    
+if __name__ == "__main__":
+    main()
