@@ -1,57 +1,57 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue May 14 16:55:07 2019
-
-@author: kuche_000
-
-Script to extract SIDs from the TrainSet, so we can do 5-fold-CV, on the same 
-Session IDs, for all models [multiclass and LTR]
+Script to sample SIDs from the [multiclass-]TrainSet into 'k'-folds.
+[These SIDs are used for the Test/Train Splits in the CrossValidation]
 """
+# Load needed packages
 import pandas as pd
 import random
 import pickle
+import os
 
-# load the train_data:
-train = pd.read_csv("data/raw/data_set_phase1/train_queries.csv")
+# Check Working Directory:
+if os.getcwd()[-12:] != "kdd-cup-2019":
+	raise ValueError("Error with WorkingDirectory \n \
+			[1] either WD isn't set correctly to 'kdd-cup-2019' \n \
+			[2] or WD was renamed")
 
-# randomly sample 5 equal sized arrays of sids, use to slice the DFs
-all_sids = train["sid"]
+# Load the multiclass Traindata & extract the "sid"-Column:
+train_set = pd.read_pickle("data/processed/multiclass/train_all_first.pickle")
+all_sids  = train_set["sid"]
 
+# Set seed for Reproducibility and save sids in cahnged order!
+random.seed(9001)
 sampled_ids = random.sample(list(all_sids), k = len(all_sids))
 
+# check whether the sampled_ids have the same length as TrainSet["sid"]:
+if len(set(sampled_ids)) != len(set(all_sids)):
+	raise ValueError("Error, sampled SIDs have less elements than TrainSet has SIDs")
 
-# Sampling should not have changed any length settings:
-len(sampled_ids) == len(all_sids)
-len(set(sampled_ids)) == len(all_sids)
-
-
-# Slice the List into 5 evely sized chunks:
-sample_sizes = round(len(sampled_ids) / 5)
-SIDs_1 = sampled_ids[0*sample_sizes: 1*sample_sizes]
-SIDs_2 = sampled_ids[1*sample_sizes: 2*sample_sizes]
-SIDs_3 = sampled_ids[2*sample_sizes: 3*sample_sizes]
-SIDs_4 = sampled_ids[3*sample_sizes: 4*sample_sizes]
-SIDs_5 = sampled_ids[4*sample_sizes:]
-
-# Check for the length of the single samples:
-len(SIDs_1)
-len(SIDs_2)
-len(SIDs_3)
-len(SIDs_4)
-len(SIDs_5)
-
-# Save the Results as single pickle files:
-with open("data/processed/Test_Train_Splits/SIDs_1.txt", "wb") as fp:
-	pickle.dump(SIDs_1, fp)
-
-with open("data/processed/Test_Train_Splits/SIDs_2.txt", "wb") as fp:
-	pickle.dump(SIDs_2, fp)
+def slice_to_evely_sized_chunks(k):
+	"""
+	slice the 'sampled_ids' into k evely sized chunks
+	"""
+	# get the length of each fold & check whether it has no floats:
+	sample_sizes = len(sampled_ids) / k
 	
-with open("data/processed/Test_Train_Splits/SIDs_3.txt", "wb") as fp:
-	pickle.dump(SIDs_3, fp)
+	if sample_sizes % 1 != 0:
+		raise ValueError("k can not divide the SIDs into evely sized chunks")
+		
+	# Check whether the folder to save the results is existent:
+	if not os.path.isdir("data/processed/Test_Train_Splits/" + str(k) + "-fold"):
+		raise ValueError("There is no " + str(k) + "-fold Folder in data/processed/Test_Train_Splits/")
 	
-with open("data/processed/Test_Train_Splits/SIDs_4.txt", "wb") as fp:
-	pickle.dump(SIDs_4, fp)
+	# Define List to save SIDs for each fold
+	SIDs = []
 	
-with open("data/processed/Test_Train_Splits/SIDs_5.txt", "wb") as fp:
-	pickle.dump(SIDs_5, fp)
+	# Slice the 'sampled_ids' into k evely sized chunks:
+	for fold in range(k):
+		SIDs.append(sampled_ids[int(fold * sample_sizes) : int((fold + 1) * sample_sizes)])
+
+	# Save the Results as Single pickle File:
+	with open("data/processed/Test_Train_Splits/" + str(k) + "-fold/SIDs.pickle", "wb") as fp:
+		pickle.dump(SIDs, fp)
+
+
+slice_to_evely_sized_chunks(5)
+slice_to_evely_sized_chunks(10)
