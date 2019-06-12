@@ -1,0 +1,8 @@
+md5: f853ba8978aa240bb0b6871f1edfe265
+wdir: .
+outs:
+- md5: 857f75e058b1c04f04441db3051984f4
+  path: test_all_last.pickle
+  cache: true
+  metric: false
+  persist: false

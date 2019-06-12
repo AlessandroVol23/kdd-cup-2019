@@ -1,0 +1,8 @@
+md5: a2c0101beaebf4972e116a796c3e60c9
+wdir: .
+outs:
+- md5: 7cb0c9389f21585fb48a088389a4ef5e
+  path: test_plans.csv
+  cache: true
+  metric: false
+  persist: false
