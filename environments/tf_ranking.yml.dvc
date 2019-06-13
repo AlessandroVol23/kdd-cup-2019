@@ -1,0 +1,8 @@
+md5: 92e8c0ccbd0d69b921dd7b25cdb72716
+outs:
+- cache: true
+  md5: edd2d8ea8996c7901dcf72d55b87aae2
+  metric: false
+  path: tf_ranking.yml
+  persist: false
+wdir: .
