@@ -1,8 +1,15 @@
+import itertools
+
+import click
+import numpy as np
+import pandas as pd
 import tensorflow as tf
 import tensorflow_ranking as tfr
-import pandas as pd
 from sklearn.metrics import f1_score
-import click
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 tf.enable_eager_execution()
 tf.executing_eagerly()
@@ -158,8 +165,10 @@ def get_estimator(hparams):
         params=hparams)
 
 
-def ltr_to_submission(df, ranker, path):
-    preds = ranker.predict(input_fn=lambda: input_fn(_TRAIN_DATA_PATH))
+def ltr_to_submission(df, features, ranker, path):
+    features = features + ['sid']
+
+    preds = ranker.predict(input_fn=lambda: input_fn(path))
     import itertools
     import numpy as np
     # Not sure how to get all preds because it runs infinit
@@ -172,16 +181,13 @@ def ltr_to_submission(df, ranker, path):
         a[count] = i
         count += 1
 
-    test_X = df[[
-        'sid',
-        'transport_mode',
-        'distance_plan',
-        'eta',
-        'price'
-    ]]
+    test_X = df[features]
 
     # Assign prediction vals to df
     # Tried with a or a sum for all features
+    # a = a[:,0:_NUM_FEATURES]
+    # a = a.sum(axis=1)
+
     test_X = test_X.assign(yhat=a[:, 0])
 
     df_end = pd.DataFrame(columns=['yhat'], index=df.sid.unique())
@@ -190,34 +196,46 @@ def ltr_to_submission(df, ranker, path):
         'yhat', 'transport_mode'
     ]]
 
+    from sklearn.metrics import f1_score
+    score = f1_score(df.groupby("sid").first()['click_mode'], df_end.transport_mode, average='weighted')
+    print('F1 Score is: {}'.format(score))
+
     return df_end
 
 @click.command()
 @click.argument("path_train_svm", type=click.Path(exists=True))
 @click.argument("path_val_svm", type=click.Path(exists=True))
+@click.argument("path_feature_file", type=click.Path(exists=True))
 @click.argument("path_train_df", type=click.Path(exists=True))
 @click.argument("path_val_df", type=click.Path(exists=True))
-def main(path_train_svm, path_val_svm, path_train_df, path_val_df):
+def main(path_train_svm, path_val_svm, path_feature_file, path_train_df, path_val_df):
     
-    print("MAIN: Read in data")
+    logger.info("MAIN: Read in data")
     df_train_train = pd.read_pickle(path_train_df)
     df_train_test = pd.read_pickle(path_val_df)
 
     _TRAIN_DATA_PATH = path_train_svm
     _TEST_DATA_PATH = path_val_svm
-    
-    print("MAIN: Create Ranker")
+
+    with open(path_feature_file) as f:
+        features = f.read().splitlines()
+
+    _NUM_FEATURES = len(features)
+
+    logger.info("MAIN: Create Ranker")
     hparams = tf.contrib.training.HParams(learning_rate=0.05)
     ranker = get_estimator(hparams)
     
-    print("MAIN: Train Ranker")
-    ranker.train(input_fn=lambda: input_fn(_TRAIN_DATA_PATH), steps=100)
+    logger.info("MAIN: Train Ranker")
+    ranker.train(input_fn=lambda: input_fn(_TRAIN_DATA_PATH), steps=10)
     
-    print("MAIN: LTR to submission")
-    df_preds = ltr_to_submission(df_train_train, ranker, path_train_svm)
+    logger.info("MAIN: LTR to submission")
+    df_preds = ltr_to_submission(df_train_test, features, ranker, _TEST_DATA_PATH)
 
-    print(f1_score(df_train_train.groupby("sid").first()['click_mode'], df_preds.transport_mode, average='weighted'))
+    logger.info(f1_score(df_train_train.groupby("sid").first()['click_mode'], df_preds.transport_mode, average='weighted'))
 
     
 if __name__ == "__main__":
+    log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    logging.basicConfig(level=logging.INFO, format=log_fmt)
     main()

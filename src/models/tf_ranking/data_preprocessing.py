@@ -4,7 +4,6 @@ from sklearn.datasets import dump_svmlight_file
 import pickle
 import click
 
-
 def create_svm_file(df, features_X, path):
     """
     This function saves the dataframe as lib svm file.
@@ -48,8 +47,8 @@ def main(path_train_file, path_test_file, path_feature_file, output_path_train, 
     print("Loaded df_train with shape: ", df_train.shape)
     print("Loaded df_test with shape: ", df_test.shape)
 
-    with open(path_feature_file, 'rb') as fp:
-        features = pickle.load(fp)
+    with open(path_feature_file) as f:
+        features = f.read().splitlines()
 
     print("Create for df_train")
     train_X, train_y = create_svm_file(df_train, features, output_path_train)
