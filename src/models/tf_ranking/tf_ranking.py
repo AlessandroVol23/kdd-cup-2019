@@ -82,16 +82,18 @@ def example_feature_columns():
 
 def make_score_fn():
     """Returns a scoring function to build `EstimatorSpec`."""
-
+    # Do I have to define how to handle features in here?
     def _score_fn(context_features, group_features, mode, params, config):
         """Defines the network to score a documents."""
         del params
         del config
         # Define input layer.
+        # Where does he get the group features from?
         example_input = [
             tf.layers.flatten(group_features[name])
             for name in sorted(example_feature_columns())
         ]
+        # Example input builds just column names from 0 -> _NUM_FEATURES and sets default value to 0?
         input_layer = tf.concat(example_input, 1)
 
         cur_layer = input_layer
@@ -157,8 +159,11 @@ def get_estimator(hparams):
         train_op_fn=_train_op_fn)
 
     return tf.estimator.Estimator(
+        # Model fn gets features and labels from input_fn
         model_fn=tfr.model.make_groupwise_ranking_fn(
             group_score_fn=make_score_fn(),
+            # group_size: An integer denoting the number of examples in `group_score_fn`
+            # How many number of examples are in our group_score_fn?
             group_size=1,
             transform_fn=None,
             ranking_head=ranking_head),
