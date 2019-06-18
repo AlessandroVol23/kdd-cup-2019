@@ -135,8 +135,8 @@ def lgbm_train(df_train, features, CV, folder,
 		# [1-3] Check whether the folder to save results is existent
 		#       if it exists we count number of summaries [.csv-files] and  
 		#       assign the number
-	if not os.path.isdir("models\lgb_multi/" + str(folder)):
-		raise ValueError(str(folder) + "is not existent in 'models/Multivariate Approach/'")
+	if not os.path.isdir("models/lgb_multi/" + str(folder)):
+		raise ValueError(str(folder) + "is not existent in 'models/lgb_multi/'")
 	else:
 		numb = 0
 		for _files_ in os.listdir("models\lgb_multi/" + str(folder)):

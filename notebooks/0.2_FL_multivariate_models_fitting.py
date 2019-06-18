@@ -257,14 +257,15 @@ def get_cv_and_modells(data, features, model, CV, scaled, folder, model_type):
 			
 	pd_res.to_csv("models/Multivariate Approach/" + str(folder) + "/Summary" + str(numb) + ".csv")
 	
-	
+	"""
+	Commentet out, as it takes a lot of memory which leads to errors in the VM....
 	# [4] Train the final model [on all train data] and save it:
 	print("train the final model")
 	model.fit(data.loc[:, features], data["Response"])
 	
 	final_model_name = "models/Multivariate Approach/"+ folder + "/Final_Mod" + str(numb) + ".pickle"
 	pickle.dump(model, open(final_model_name, 'wb'))
-	
+	"""
 
 """
 get_cv_and_modells(data = df_train_merged.iloc[:1000], 
