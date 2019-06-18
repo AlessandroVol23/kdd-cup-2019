@@ -2,51 +2,41 @@ kdd-cup-2019
 ==============================
 This is the repository for the Big Data Science practical course @ LMU.
 
-### Raw preprocessing
+## Raw preprocessing
 
-For the initial raw preprocessing with features (no external), run this file in `../kdd-cup-2019`. Choose `first` or `last` depending on which transport mode you prefer to pick, the one displayed first in the plan list or last.
+For the initial raw preprocessing with features (no external), run this file in `../kdd-cup-2019`. 
 
-```shell./src/data/make_raw_preprocessing.py /path/to/kdd-cup-2019/data 'first'
-python 
+* Choose `row` or `col` depending on what model you want to train
+* Choose `first` or `last` depending on which transport mode you prefer to pick, the one displayed first in the plan list or last.
+
+This adds the 'raw' features:
+
+* Coordinates
+* Profiles
+* Targets
+* Unstack of plans
+* 
+
+```shell
+python ./src/data/make_raw_preprocessing.py /path/to/kdd-cup-2019/data 'col' 'first'
 ```
 
-The two dataframes are stored in `../data/processed_raw/`
+## External features preprocessing
 
-* train pickle has 500000 x 114 dimensions
-* test pickle has 94358 x 112 dimensions
+This adds the external features:
 
-Train pickle has `click_time` and `click_mode` as additional columns.
+* Distance to closest subway
+* Time features
+* Public holiday
+* Weather features
 
-### time_features
-
-```python
-from src.features.build_features import time_features
-
-df_train = time_features(df_train, type='req')
-df_test = time_features(df_test, type='req')
+```shell
+python ./src/features/add_external.py
 ```
 
-### add_public_holidays
+# Models
 
-```python
-from src.features.build_features import add_public_holidays
-
-df_train = add_public_holidays(df_train)
-df_test = add_public_holidays(df_test)
-```
-
-### add_dist_nearest_subway
-
-```python
-from src.features.build_features import add_dist_nearest_subway
-
-df_train = add_dist_nearest_subway(df_train)
-df_test = add_dist_nearest_subway(df_test)
-```
-
-## Models
-
-### How to save a model?
+## How to save a model?
 
 ```python
 # Add sys to sys path to import custom modules from source

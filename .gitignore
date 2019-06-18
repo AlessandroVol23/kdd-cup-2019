@@ -87,8 +87,8 @@ target/
 .mypy_cache/
 
 pandas/
-
-/submissions
+data/
+submissions/
 models/
 *.csv
 
