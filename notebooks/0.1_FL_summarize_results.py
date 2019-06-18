@@ -48,10 +48,12 @@ def extract_summaries(paths, key):
 
 
 # Example of how to use the function:
-paths = ["models/Multivariate Approach/1/MLP", 
+paths = ["models/Multivariate Approach/1/MLP",
+		 "models/Multivariate Approach/1/KNN", 
 		 "models/Multivariate Approach/1/RF", 
-		 "models/Multivariate Approach/1/XGBoost"]
+		 "models/Multivariate Approach/1/XGBoost",
+		 "models/lgb_multi/1"]
 
 results = extract_summaries(paths = paths, key = "Summary")
-	
-# stacked_res = extract_summaries("models/stacking", key = "Summary")
+
+boxplot = results.boxplot(column=['F1_mean'], by = "model_type")
