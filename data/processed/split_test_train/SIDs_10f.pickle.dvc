@@ -1,0 +1,8 @@
+wdir: .
+outs:
+- path: SIDs_10f.pickle
+  metric: false
+  cache: true
+  persist: false
+  md5: bdc8498734b24d690c65779359c9148d
+md5: 6372f6e63ce52192f176872db6d43963

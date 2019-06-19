@@ -1,0 +1,8 @@
+md5: 07aad24e38ba1715fa81f77a75787dc0
+wdir: .
+outs:
+- md5: e87ae2421454b42ccdeb47d53d87eca3
+  path: train_all_first.pickle
+  cache: true
+  metric: false
+  persist: false

@@ -5,39 +5,31 @@
 
 1. `pip install dvc`
 2. `cd path/to/kdd-cup-2019` 
-3. ` dvc init`, a .dvc/ folder is created
+3. `dvc init`, a .dvc/ folder is created
 4. `dvc remote add sshcache ssh://ubuntu@138.246.232.191:/home/ubuntu/dvc_ssh` add remote linux virtual machine 
 5. `dvc config core.remote sshcache`
-6. Make changes in folder `data`
-7. `dvc add data/mynewfile.xml` 
-8. `pip install dvc[all]` if necessary
-9. `git add data/myfile.xml.dvc`
-10. `dvc push` (should work if the private keys are added to the remote VM)
 
 
-## Steps for the others (do once)
-
-1. `pip install dvc`. If error, download in the [main page](https://dvc.org/)
-2. `cd path/to/kdd-cup-2019` 
-3. check that `.dvc/config` exists, if not see step \#4 from Initialization
-4. `dvc config core.remote sshcache`
-5. Make changes in folder `data`
-6. `dvc add data` and same with all changed data
-7. `git add data.dvc` and same with all changed data
-8. `git commit -m "#your_issue your_message"`
-9. `dvc push`
-10. `git push`
-
-## Steps in normal case
+## Steps for add new data
 
 1. `git pull`
 2. `dvc pull`
-3. Make changes in `folder`
-4. `dvc add folder` and same with all changed data
-5. `git add folder.dvc` and same with all changed data
-6. `git commit -m "#your_issue message"`
-7. `dvc push`
-8. `git push`
+3. add new data file
+4. `dvc add <data>`
+5. `git add <data>.dvc`
+5. `git commit <data>.dvc .gitignore -m "#your_issue message"`
+6. `git push origin <your_branch>`
+7. `dvc push` or `dvc push -r sshcache`
+
+
+## Steps for push new data
+
+1. `git pull`
+2. `dvc pull`
+4.  update data file
+4. `dvc commit`
+5. `dvc push` or `dvc push -r sshcache`
+
 
 ## What to do if you get error 'failed to pull data from the cloud: not a valid private RSA key file'
 
@@ -59,4 +51,3 @@ You need to create a new private RSA file:
 3. vi ~/.ssh/authorized_keys 
 4. paste the key
 5. esc, :x and enter
-
