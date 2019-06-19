@@ -1,0 +1,8 @@
+md5: 7cc3e36d1ed6597fbef0d58e8b2c6f5a
+wdir: .
+outs:
+- md5: 08c85a5f5a048c945238afe9da5c5f05
+  path: profiles.csv
+  cache: true
+  metric: false
+  persist: false

@@ -1,0 +1,8 @@
+md5: 72116462b35aa9ec6660660ba92914c8
+wdir: .
+outs:
+- md5: 448a05c93d26230071646d63ea9a3ca5
+  path: test_queries.csv
+  cache: true
+  metric: false
+  persist: false
