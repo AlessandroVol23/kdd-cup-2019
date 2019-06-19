@@ -8,8 +8,8 @@ import tensorflow_ranking as tfr
 from sklearn.metrics import f1_score
 
 import logging
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 tf.enable_eager_execution()
 tf.executing_eagerly()
@@ -82,6 +82,7 @@ def example_feature_columns():
 
 def make_score_fn():
     """Returns a scoring function to build `EstimatorSpec`."""
+
     # Do I have to define how to handle features in here?
     def _score_fn(context_features, group_features, mode, params, config):
         """Defines the network to score a documents."""
@@ -93,7 +94,9 @@ def make_score_fn():
             tf.layers.flatten(group_features[name])
             for name in sorted(example_feature_columns())
         ]
-        # Example input builds just column names from 0 -> _NUM_FEATURES and sets default value to 0?
+        # Example input are all features as numeric columns
+        # The names are 0 -> _NUM_FEATURES
+        # Input features
         input_layer = tf.concat(example_input, 1)
 
         cur_layer = input_layer
@@ -103,36 +106,11 @@ def make_score_fn():
                 units=layer_width,
                 activation="tanh")
 
+        # Last Layer
         logits = tf.layers.dense(cur_layer, units=1)
         return logits
 
     return _score_fn
-
-
-def eval_metric_fns():
-    """Returns a dict from name to metric functions.
-
-    This can be customized as follows. Care must be taken when handling padded
-    lists.
-
-    def _auc(labels, predictions, features):
-    is_label_valid = tf_reshape(tf.greater_equal(labels, 0.), [-1, 1])
-    clean_labels = tf.boolean_mask(tf.reshape(labels, [-1, 1], is_label_valid)
-    clean_pred = tf.boolean_maks(tf.reshape(predictions, [-1, 1], is_label_valid)
-    return tf.metrics.auc(clean_labels, tf.sigmoid(clean_pred), ...)
-    metric_fns["auc"] = _auc
-
-    Returns:
-    A dict mapping from metric name to a metric function with above signature.
-    """
-    metric_fns = {}
-    metric_fns.update({
-        "metric/ndcg@%d" % topn: tfr.metrics.make_ranking_metric_fn(
-            tfr.metrics.RankingMetricKey.NDCG, topn=topn)
-        for topn in [1, 3, 5, 10]
-    })
-
-    return metric_fns
 
 
 def get_estimator(hparams):
@@ -168,6 +146,32 @@ def get_estimator(hparams):
             transform_fn=None,
             ranking_head=ranking_head),
         params=hparams)
+
+
+def eval_metric_fns():
+    """Returns a dict from name to metric functions.
+
+    This can be customized as follows. Care must be taken when handling padded
+    lists.
+
+    def _auc(labels, predictions, features):
+    is_label_valid = tf_reshape(tf.greater_equal(labels, 0.), [-1, 1])
+    clean_labels = tf.boolean_mask(tf.reshape(labels, [-1, 1], is_label_valid)
+    clean_pred = tf.boolean_maks(tf.reshape(predictions, [-1, 1], is_label_valid)
+    return tf.metrics.auc(clean_labels, tf.sigmoid(clean_pred), ...)
+    metric_fns["auc"] = _auc
+
+    Returns:
+    A dict mapping from metric name to a metric function with above signature.
+    """
+    metric_fns = {}
+    metric_fns.update({
+        "metric/ndcg@%d" % topn: tfr.metrics.make_ranking_metric_fn(
+            tfr.metrics.RankingMetricKey.NDCG, topn=topn)
+        for topn in [1, 3, 5, 10]
+    })
+
+    return metric_fns
 
 
 def ltr_to_submission(df, features, ranker, path):
@@ -207,6 +211,7 @@ def ltr_to_submission(df, features, ranker, path):
 
     return df_end
 
+
 @click.command()
 @click.argument("path_train_svm", type=click.Path(exists=True))
 @click.argument("path_val_svm", type=click.Path(exists=True))
@@ -214,7 +219,6 @@ def ltr_to_submission(df, features, ranker, path):
 @click.argument("path_train_df", type=click.Path(exists=True))
 @click.argument("path_val_df", type=click.Path(exists=True))
 def main(path_train_svm, path_val_svm, path_feature_file, path_train_df, path_val_df):
-    
     logger.info("MAIN: Read in data")
     df_train_train = pd.read_pickle(path_train_df)
     df_train_test = pd.read_pickle(path_val_df)
@@ -230,16 +234,17 @@ def main(path_train_svm, path_val_svm, path_feature_file, path_train_df, path_va
     logger.info("MAIN: Create Ranker")
     hparams = tf.contrib.training.HParams(learning_rate=0.05)
     ranker = get_estimator(hparams)
-    
+
     logger.info("MAIN: Train Ranker")
     ranker.train(input_fn=lambda: input_fn(_TRAIN_DATA_PATH), steps=10)
-    
+
     logger.info("MAIN: LTR to submission")
     df_preds = ltr_to_submission(df_train_test, features, ranker, _TEST_DATA_PATH)
 
-    logger.info(f1_score(df_train_train.groupby("sid").first()['click_mode'], df_preds.transport_mode, average='weighted'))
+    logger.info(
+        f1_score(df_train_train.groupby("sid").first()['click_mode'], df_preds.transport_mode, average='weighted'))
 
-    
+
 if __name__ == "__main__":
     log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     logging.basicConfig(level=logging.INFO, format=log_fmt)

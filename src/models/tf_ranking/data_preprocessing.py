@@ -15,10 +15,13 @@ def create_svm_file(df, features_X, path):
     df.sort_values("sid", inplace=True)
 
     # Create ranking target
+    # Check if click_mode is in df_columns -> If not it is the test set
     if 'click_mode' in df.columns:
         print("Build LTR labels")
-        df = df.assign(target=df.apply(lambda x: 0 if x.click_mode == x.transport_mode else 100, axis=1))
+        # Target 1 for right label / 100 if not the right label
+        df = df.assign(target=df.apply(lambda x: 1 if x.click_mode == x.transport_mode else 100, axis=1))
     else:
+        # If test set every entry gets zeri for a label
         print("Assign label 0 for test set")
         df = df.assign(target=0)
 
