@@ -1,0 +1,8 @@
+md5: 4e5ce41ca1574bcb6496d49b5a5cd337
+wdir: .
+outs:
+- md5: 9ee71f72f322335bae44978bfe4d0659
+  path: features_tfranking.txt
+  cache: true
+  metric: false
+  persist: false
