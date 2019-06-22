@@ -37,7 +37,7 @@ if os.getcwd()[-12:] != "kdd-cup-2019":
 print("Load SIDs, FeatureNames, Train- and TestData")
 #  [1] Load Train and TestData ------------------------------------------------
 DF_new_train = pd.read_pickle("data/processed/multiclass/train_all_first.pickle")
-DF_new_test  = pd.read_pickle("data/processed/multiclass/Desktop/test_all_first.pickle")
+DF_new_test  = pd.read_pickle("data/processed/multiclass/test_all_first.pickle")
 
 # [2] Load SessionIDs for reproducible k-fold-CV ------------------------------
 with open("data/processed/Test_Train_Splits/5-fold/SIDs.pickle", "rb") as fp:
