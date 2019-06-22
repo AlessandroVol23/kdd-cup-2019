@@ -209,6 +209,9 @@ def cv_lgbm_ranking(data, features, CV, folder):
 								   all variables in 'features' Argument
 								   
 		- featues (list) : list of strings, that shall be used as features
+		                   Should always contain "transport_mode", else the 
+						   Model will see features, but can not tell which is 
+						   which, which will end up in terrible results!
 		
 		- CV (list of lists) : list with at least 2 lists.
 		                       the sublists are filled with SIDs [must be in data]
