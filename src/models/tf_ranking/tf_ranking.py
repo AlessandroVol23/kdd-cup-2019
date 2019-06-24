@@ -192,11 +192,6 @@ def ltr_to_submission(df, features, ranker, path):
 
     test_X = df[features]
 
-    # Assign prediction vals to df
-    # Tried with a or a sum for all features
-    # a = a[:,0:_NUM_FEATURES]
-    # a = a.sum(axis=1)
-
     test_X = test_X.assign(yhat=a[:, 0])
 
     df_end = pd.DataFrame(columns=['yhat'], index=df.sid.unique())
@@ -207,7 +202,7 @@ def ltr_to_submission(df, features, ranker, path):
 
     from sklearn.metrics import f1_score
     score = f1_score(df.groupby("sid").first()['click_mode'], df_end.transport_mode, average='weighted')
-    print('F1 Score is: {}'.format(score))
+    logger.info('F1 Score is: %s', str(score))
 
     return df_end
 
@@ -224,7 +219,8 @@ def main(path_train_svm, path_val_svm, path_feature_file, path_train_df, path_va
     df_train_test = pd.read_pickle(path_val_df)
 
     _TRAIN_DATA_PATH = path_train_svm
-    _TEST_DATA_PATH = path_val_svm
+    _TEST_DATA_PA
+    TH = path_val_svm
 
     with open(path_feature_file) as f:
         features = f.read().splitlines()
@@ -240,9 +236,6 @@ def main(path_train_svm, path_val_svm, path_feature_file, path_train_df, path_va
 
     logger.info("MAIN: LTR to submission")
     df_preds = ltr_to_submission(df_train_test, features, ranker, _TEST_DATA_PATH)
-
-    logger.info(
-        f1_score(df_train_train.groupby("sid").first()['click_mode'], df_preds.transport_mode, average='weighted'))
 
 
 if __name__ == "__main__":
