@@ -1,0 +1,8 @@
+md5: bf6940d3ddee7b41bccb89c8524081ba
+wdir: .
+outs:
+- md5: 596b41017a0543dbbb8677da02c34748
+  path: train_all_row_sample_50_af.libsvm
+  cache: true
+  metric: false
+  persist: false
