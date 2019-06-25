@@ -396,7 +396,7 @@ def cv_lgbm_ranking(data, features, CV, folder):
 		dict_to_pd["Acc_" + str(index + 1)]       = Accuracy[index]
 		dict_to_pd["Precision_" + str(index + 1)] = Precision[index]
 		dict_to_pd["Conf_" + str(index + 1)]      = Conf_Matrix[index]
-		
+	
 	# [3-4] Add mean of the scores [except for Confmatrix]
 	dict_to_pd["F1_mean"]   = np.mean(F1)
 	dict_to_pd["Acc_mean"]  = np.mean(Accuracy)
@@ -421,13 +421,9 @@ if __name__ == "__main__":
 	with open("data/processed/Test_Train_Splits/5-fold/SIDs.pickle", "rb") as fp:
 		CV = pickle.load(fp)
 	
-	prfs                = pd.read_csv("data/raw/data_set_phase1/profiles.csv")
-	prfs.loc[len(prfs)] = np.repeat(-1, 67)
+	data       = load_data("data/processed/Ranking/train_raw_row.pickle")
 	
-	data       = load_data("data/processed/Ranking/train_all_row.pickle")
-	data_w_pid = pd.merge(data, prfs, on = "pid", how = 'inner')
-	
-	cv_lgbm_ranking(data = data_w_pid, 
+	cv_lgbm_ranking(data     = data, 
 				    features = feature_names, 
-				    CV = CV, 
-				    folder = "1")
+				    CV       = CV, 
+				    folder   = "1")
