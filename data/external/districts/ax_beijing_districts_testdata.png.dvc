@@ -1,0 +1,8 @@
+md5: 7c71cd4bf4b079628760d34b2d6ce091
+wdir: .
+outs:
+- md5: ce4493570abd4d142134fb2676a9f4fe
+  path: ax_beijing_districts_testdata.png
+  cache: true
+  metric: false
+  persist: false
