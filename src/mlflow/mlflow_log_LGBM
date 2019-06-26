@@ -1,0 +1,115 @@
+import pysftp
+from paramiko import sftp
+import mlflow as mlf
+import pandas as pd
+
+
+df_summary = pd.read_csv("../data/Summaries/LGBM_Ranking/Summary_14.csv")
+
+columns = df_summary.columns.values
+metrics = ['Acc_mean', 'F1_mean', 'Prec_mean']
+rest_param = ['model_type']
+metrics_dict = {}
+parameter_dict = {}
+rest_param_dict = {}
+feature_dict = {}
+
+for metric in metrics:
+    value = float(df_summary[metric])
+    if metric not in metrics_dict:
+        metrics_dict[metric] = value
+print('Metrics successful')
+
+if 'features' in columns:
+    features = df_summary['features'].values[0].split(' - ')
+    feature_dict = {features[i]: features[i] for i in range(0, len(features))}
+print('Features successful')
+
+for param in rest_param:
+    value = df_summary[param].values[0]
+    if param not in rest_param_dict:
+        rest_param_dict[param] = value
+print('Rest_Params successful')
+
+
+#Parameters include down-/upsampling with values [,] - need workaround to split
+param_string = df_summary['parameters'].values[0]
+
+string1 = param_string.split(',', 11)
+param_string_split = string1[:11]
+
+param_string_1_1, param_string_1_2 = param_string_split[:2], param_string_split[2:]
+
+string_a = []
+param_dict_1_1 = {}
+
+for each in param_string_1_1:
+    h = each.split(': ')
+    string_a.append(h)
+
+for each in string_a:
+    param_dict_1_1[each[0][2:-1]] = each[1][1:-1]
+
+print('Param_dict_1_1 successful')
+
+string_b = []
+param_dict_1_2 = {}
+
+for each in param_string_1_2:
+    h = each.split(': ')
+    string_b.append(h)
+
+for each in string_b:
+    param_dict_1_2[each[0][2:-1]] = each[1]
+
+print('Param_dict_1_2 successful')
+
+param_string_x = string1[11]
+param_string_y = param_string_x[:-2]
+param_string_z = param_string_y.split('],')
+param_string_z
+
+param_string_2 = []
+param_dict_2 = {}
+
+for each in param_string_z:
+    x = each.split(': [')
+    param_string_2.append(x)
+
+for each in param_string_2:
+    param_dict_2[each[0][2:-1]] = each[1]
+
+print('Param_dict_2 successful')
+
+
+parameter_dict = {**param_dict_1_1, **param_dict_1_2, **param_dict_2}
+print('Parameters successful')
+
+
+#Log into Mlflow Tracking Server
+
+cnopts = pysftp.CnOpts()
+
+with pysftp.Connection('138.246.233.10', username='ubuntu', private_key='~/.ssh/id_rsa', port=22, cnopts=cnopts):
+    mlf.set_tracking_uri('http://138.246.233.10:80')
+    print('SFTP connection successful')
+
+experiment_name = 'Multiclass'
+experiment_id = 2
+mlf.set_experiment(experiment_name)
+
+with mlf.start_run(experiment_id=experiment_id, run_name=experiment_name, nested=False):
+
+    for name, value in metrics_dict.items():
+        mlf.log_metric(name, value)
+
+    for name, value in parameter_dict.items():
+        mlf.log_param(name, value)
+
+    for name, value in rest_param_dict.items():
+        mlf.log_param(name, value)
+
+    for name, value in feature_dict.items():
+        mlf.log_param(name, value)
+
+    print(f'Logging successful')

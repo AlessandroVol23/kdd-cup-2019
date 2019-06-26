@@ -1,0 +1,8 @@
+md5: 6e9d06066b430a118eb7bb31db8928df
+wdir: .
+outs:
+- md5: 3cbb8339a5648aaafef323432ca67571
+  path: ax_beijing_districts_traindata.png
+  cache: true
+  metric: false
+  persist: false

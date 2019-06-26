@@ -1,80 +1,54 @@
-# Issue #16: MLflow
+# Issue #75: Setup MLflow
 
-# Step 1
-## Setup MLflow
+## Step 1 - Virtual Machine
 
-1. Install `pip install mlflow`
-2. Import  `import mlflow`
-3. In your code, after you've defined your parameters create a run `with mlflow.start_run():`
-4. Log your parameters with 
+By default, the MLflow Python API logs runs locally to files in an mlruns directory wherever the program is run. 
+To log runs remotely, set up a tracking server on the VM consisting of two components: a backend store and an artifact store.
+
+1. Install backend store: MySQL, Microsoft SQL Server, SQLite or PostgreSQL
+2. Install artifact store: Amazon S3, Azure Blob Storage, Google Cloud Storage, FTP server, SFTP Server, NFS or HDFS
+
+`Our combination of tracking server: SFTP & MySQL`
+
+1. Install Python
+2. Install MLflow
+3. As default port of MLflow is 5000 use Nginx to set up a reverse proxy
+4. `$ mlflow server --host 0.0.0.0 --artifact-default-root sftp://<user>@<server_ip>/<path_to_ftp_directory> 
+--backend-store-uri <sql_uri>`
+5. Check if Server is available via browser 
+
+## Step 2 - Locale Machine
+
+In order for all to use the module mlflow.py install
+
+1. MLflow `pip install mlflow`
+2. PySftp `pip install pysftp`
+3. Paramiko `pip install paramiko`
+
+
+## Step 3 - Prepare Model
+
+`logmlflow.py` contains two functions:  `mlflow_dict()` and `mlflow_log()`
+
+- `mlflow_dict(df_summary)`: In case results where tracked locally already this function prepares all data to fit requirements of `mlflow_log()`. 
+- `mlflow_log(model, metrics, parameters, rest_params, features)`: This function logs all results to the tracking server. Following inputs are required
+    - model : `0 (Default), 1 (LightGBM), 2 (Multiclass), 3 (TF-Ranking)`
+    - metrics : All metrics (e.g. F1, CVS etc.) to be logged as a dictionary
+    - parameters : All parameters to be logged as a dictionary
+    - rest_params : Additional parameters to be logged as a dictionary
+    - features : All features to be logged as a dictionary
+
+#### Sample Code
 ```
-for name, value in PARAMS.items():
-        mlflow.log_param(name, value)
+summary = pd.read_csv("../data/summary/Summary4.csv")
+
+metrics_dict, parameter_dict, rest_param_dict, feature_dict = x.mlflow_dict(summary)
+x.mlflow_log(2, metrics_dict, parameter_dict, rest_param_dict, feature_dict)
 ```
-5. Following your code to train the model, log your metrics `mlflow.log_metric("f1", f1)`
-6. Log your model to ensure all important info is saved `mlflow.log_artifact('model.h5')`
-7. Change directory to data `cd ./kdd-cup-2019/data`
-8. Run your training
-9. View results with `mlflow ui`
-
-
-### Sample Code
-```
-import os
-import warnings
-import sys
-
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
-import mlflow
-
-mlrun_path = mlflow.set_tracking_uri("http://127.0.0.1:5000")
-experiment_name = mlflow.set_experiment("LightGBM/Multiclass/Tensorflow")
-
-# Read the csv file
-data = pd.read_csv("data.csv")
-
-# Your parameters
-PARAMS = {
-    'distance': 5,
-    'weather': 256,
-    'id': 0.1,
-    'weekend': False,
-    'weekday': True,
-}
-
-# experiment_id "1" for LightGBM, "2" for Multiclass, "3" for TF
-with mlflow.start_run(experiment_id=1, run_name="optional info about run"):
-    
-    for name, value in PARAMS.items():
-        mlflow.log_param(name, value)
-    
-    
-    ### Your code to train the model
-
-    f1 = model.evaluate(x_test, y_test, verbose=2)
-    mlflow.log_metric("f1", f1)
-    
-    model.save('model.h5')
-    mlflow.log_artifact('model.h5')
-```
-
-#Step 2
-## Setup Neptune
-...
-
 
 # FAQ
-##MLflow
-MLflow is an open source platform for managing the end-to-end machine learning lifecycle. But
-- "MLflow focuses on tracking, reproducibility, and deployment, not on organization and collaboration."
-- „For sharing / accessing information about runs across machines, running a tracking server is recommended over data version.“
 
-Therefor we will use Neptune MLflow to integrate that feature.
-
-## Tracking
+### Tracking
 MLflow Tracking is organized around the concept of runs, which are executions of some piece of data science code.
 
 Each run records the following information:
@@ -86,19 +60,9 @@ Each run records the following information:
 - **Metrics:** Key-value metrics where the value is numeric. Each metric can be updated throughout the course of the run (for example, to track how your model’s loss function is converging), and MLflow records and lets you visualize the metric’s full history.
 - **Artifacts:** Output files in any format. For example, you can record images (for example, PNGs), models (for example, a pickled scikit-learn model), or even data files (for example, a Parquet file) as artifacts.
 
-### Experiments
-MLflow allows to group runs under experiments, which can be useful for comparing runs intended to tackle a particular task. 
-
-Create experiments and pass it for an individual run
-
-```
-mlflow experiments create <name>
-export MLFLOW_EXPERIMENT_ID = <id>
-```
-
 ## MLflow UI 
-View at http://localhost:5000 with `mlflow ui`. 
-Refresh Browser to get update. In case of error run and kill processes with unicorn. Try to reach MLflow UI again.
+View at http://localhost:5000 with `mlflow ui` or on tracking URI. Refresh to get updates. 
+In case of running mlflow ui locally with an error following might help.
 ```
 ps ax|grep unicorn
 kill <id>

@@ -1,0 +1,8 @@
+md5: 382fcae4469b7e54af239e550e9cde48
+wdir: .
+outs:
+- md5: ea0cabd11aa893fdc571adf2ccc14549
+  path: beijing_districts.dbf
+  cache: true
+  metric: false
+  persist: false
