@@ -5,6 +5,7 @@ import os
 import sys
 
 from build_features import add_dist_nearest_subway, time_features, add_public_holidays, add_weather_features, preprocess_coordinates
+from assign_districts_main import assign_districts
 
 def add_features(df):
     print("Adding coordinate features")
@@ -19,7 +20,10 @@ def add_features(df):
     df = add_public_holidays(df)
     print("Adding weather features")
     df = add_weather_features(df)
+    print("Assign districts")
+    df = assign_districts(df)
     return df
+
 
 def main():
     
