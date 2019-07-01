@@ -1,13 +1,12 @@
-import itertools
+import logging
 
+import itertools
 import click
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 import tensorflow_ranking as tfr
 from sklearn.metrics import f1_score
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -174,37 +173,57 @@ def eval_metric_fns():
     return metric_fns
 
 
-def ltr_to_submission(df, features, ranker, path):
+def create_f1_score(df, features, ranker, path):
+    '''
+    This function creates the f1 score. First we get the predictions on df and the file in path.
+    Then we look for the maximum of the predictions and choose these transport_modes
+    :param df: DataFrame where the file of path comes from
+    :param features: .txt feature list with all features to use
+    :param ranker: Trained model
+    :param path: Path to libsvm file
+    :return: DataFrame with right transport mode and yhat
+    '''
+
+    logger.info('Start to create f1 score.')
+    # Add sid to the feature set to group by later
     features = features + ['sid']
 
+    # Predict on trained ranker
     preds = ranker.predict(input_fn=lambda: input_fn(path))
-    import itertools
-    import numpy as np
-    # Not sure how to get all preds because it runs infinit
-    # So I take all till list size
     preds_slice = itertools.islice(preds, len(df))
-    count = 0
-    a = np.zeros((len(df), _LIST_SIZE))
 
+    # Go through preds generator object and append all predictions to one list
+    logger.info('Start predictions...')
+    li_preds = []
     for i in preds_slice:
-        a[count] = i
-        count += 1
+        li_preds.append(i)
 
-    test_X = df[features]
+    # Create numpy array from list
+    li_preds = np.array(li_preds)
 
-    test_X = test_X.assign(yhat=a[:, 0])
+    # df_all is an empty DataFrame to append all right f1 scores
+    df_all = pd.DataFrame()
 
-    df_end = pd.DataFrame(columns=['yhat'], index=df.sid.unique())
+    # Iterate through all unique sids to get DataFrame
+    # Iterate through number of unique sids to get yhats
+    logger.info('Creating df_all DataFrame to get just first ranking')
+    for current_sid, nr_sid in zip(df.sid.unique(), range(0, df.sid.nunique())):
+        logger.info('SID: %s', current_sid)
+        curr_preds = li_preds[nr_sid]
+        df_one_sid = df[df.sid == current_sid]
+        df_one_sid = df_one_sid.assign(yhat=None)
+        for current_row in range(0, len(df_one_sid)):
+            df_one_sid.iloc[current_row, -1] = curr_preds[current_row]
+        df_all = df_all.append(df_one_sid)
 
-    df_end = test_X.sort_values(['sid', 'yhat'], ascending=False).groupby('sid').first()[[
-        'yhat', 'transport_mode'
-    ]]
+    df_all = df_all.sort_values('yhat', ascending=False).drop_duplicates(['sid'])
+    y = df.groupby("sid").first()['click_mode'].values
+    yhat = df_all.sort_values('sid')['transport_mode'].values
 
-    from sklearn.metrics import f1_score
-    score = f1_score(df.groupby("sid").first()['click_mode'], df_end.transport_mode, average='weighted')
-    logger.info('F1 Score is: %s', str(score))
+    score = f1_score(y, yhat, average='weighted')
 
-    return df_end
+    print('F1 Score is: {}'.format(score))
+    return df_all
 
 
 @click.command()
@@ -226,20 +245,21 @@ def main(path_train_svm, path_val_svm, path_feature_file, path_train_df, path_va
 
     _NUM_FEATURES = len(features)
 
-    logger.info("MAIN: Create Ranker")
+    logger.info("Create Ranker")
     hparams = tf.contrib.training.HParams(learning_rate=0.05)
     ranker = get_estimator(hparams)
 
-    logger.info("MAIN: Train Ranker")
+    logger.info("Train Ranker")
     ranker.train(input_fn=lambda: input_fn(_TRAIN_DATA_PATH), steps=10)
+    print("TESTETSTSTSSTSTS")
 
-    i = 0
-    while i < 100:
-        ranker.train(input_fn=lambda: input_fn(_TRAIN_DATA_PATH), steps=100)
-        i += 1
+    # i = 0
+    # while i < 10:
+    #     ranker.train(input_fn=lambda: input_fn(_TRAIN_DATA_PATH), steps=100)
+    #     i += 1
 
-    logger.info("MAIN: LTR to submission")
-    df_preds = ltr_to_submission(df_train_test, features, ranker, _TEST_DATA_PATH)
+    logger.info("Create f1 score")
+    df_preds = create_f1_score(df_train_test, features, ranker, _TEST_DATA_PATH)
 
 
 if __name__ == "__main__":
