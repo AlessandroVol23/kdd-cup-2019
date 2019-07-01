@@ -219,8 +219,7 @@ def main(path_train_svm, path_val_svm, path_feature_file, path_train_df, path_va
     df_train_test = pd.read_pickle(path_val_df)
 
     _TRAIN_DATA_PATH = path_train_svm
-    _TEST_DATA_PA
-    TH = path_val_svm
+    _TEST_DATA_PATH = path_val_svm
 
     with open(path_feature_file) as f:
         features = f.read().splitlines()
@@ -233,6 +232,11 @@ def main(path_train_svm, path_val_svm, path_feature_file, path_train_df, path_va
 
     logger.info("MAIN: Train Ranker")
     ranker.train(input_fn=lambda: input_fn(_TRAIN_DATA_PATH), steps=10)
+
+    i = 0
+    while i < 100:
+        ranker.train(input_fn=lambda: input_fn(_TRAIN_DATA_PATH), steps=100)
+        i += 1
 
     logger.info("MAIN: LTR to submission")
     df_preds = ltr_to_submission(df_train_test, features, ranker, _TEST_DATA_PATH)
