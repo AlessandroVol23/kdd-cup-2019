@@ -38,7 +38,7 @@ You need to create a new private RSA file:
 1. Open GIT Bash
 2. `ssh-keygen -t rsa -b 4096 -C "username@campus.lmu.de" -m PEM` - add your username
 3. Overwrite, no passphrase
-4. `cat ~/.ssh./id_rsa.pub | clip` - copy the new file into the clipboard
+4. `cat ~/.ssh/id_rsa.pub | clip` - copy the new file into the clipboard
 5. Go to Gitlab Settings, SSH-Keys, add new key and paste.
 6. Ask anyone from the team to add your new key to the authorized keys list in the remote linux machine
 7. try doing `dvc pull` and it should work. If not, ask ane

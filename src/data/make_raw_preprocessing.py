@@ -20,7 +20,7 @@ def read_in_train_data(absolute_raw_data_path):
         returns: df_train_queries, df_train_plans, df_train_clicks, id_profiles
     """
 
-    data_set_path = os.path.join(absolute_raw_data_path, 'raw/data_set_phase1')
+    data_set_path = os.path.join(absolute_raw_data_path, 'raw')
 
     df_profiles = pd.read_csv(os.path.join(data_set_path, "profiles.csv"))
     df_train_clicks = pd.read_csv(os.path.join(data_set_path, "train_clicks.csv"))
@@ -117,22 +117,20 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
             df = pd.merge(df, df_plans, how='outer')
 
         elif df_mode == 'row':
-            if df_clicks is not None:
-                df = pd.merge(df_clicks, df_plans, on="sid")
-            else:
-                df = df_plans.copy()
-            df = pd.merge(df, df_queries, on="sid")
-            #df = pd.merge(df, df_profiles, how='outer')
-            df = df[pd.notnull(df['o_long'])]
+            df = pd.merge(df_plans, df_queries, on = "sid", how = "outer")
+            df = pd.merge(df, df_clicks, on = "sid", how = "outer")
+            df['click_mode'] = df['click_mode'].fillna(value=0)
+            df = pd.merge(df, df_profiles, on = "pid")
+            # df = df[pd.notnull(df['o_long'])]
 
         else:
             print("Wrong df_mode, try with 'col' or 'row'")
             sys.exit(-1)
         
-        df.pid = df.pid.apply(lambda x: 0 if np.isnan(x) else x)
-        if df_mode == 'col':
-            for i in range(66):
-                df['p'+str(i)] = df['p'+str(i)].apply(lambda x: -1 if np.isnan(x) else x)
+        # df.pid = df.pid.apply(lambda x: 0 if np.isnan(x) else x)
+        # if df_mode == 'col':
+        #    for i in range(66):
+        #        df['p'+str(i)] = df['p'+str(i)].apply(lambda x: -1 if np.isnan(x) else x)
 
         return df
 
@@ -389,6 +387,26 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
         traindf = df.head(limit)
         testdf = df.tail(len(df) - limit)
         return traindf, testdf
+	
+    def split_train_test_by_row2(df):
+	    """
+	    Function to split an df into a train and testset.
+	    20% for the testset and 80% for the trainset.
+	    Splitting based on "SIDs"
+	    """
+		# sort by request date
+	    df.sort_values(by=['req_time'], inplace = True)
+		
+		# get the SIDs we want in the TestSet and the TrainSet
+	    uniqueSIDs = df.sid.unique()
+	    limit = int(0.8*len(uniqueSIDs))
+		
+	    train_SIDs = uniqueSIDs[:limit]
+	    test_SIDs  = uniqueSIDs[limit:]
+		
+	    traindf = df.loc[df["sid"].isin(train_SIDs), :]
+	    testdf  = df.loc[df["sid"].isin(test_SIDs), :]
+	    return traindf, testdf	
 
     '''
     **********************
@@ -429,13 +447,13 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
 
     elif df_mode == 'row':
         print("2. Preprocessing df in 'row' mode")
-        df0 = df.merge(plandf, on='sid', how='left')
+        df0 = df.merge(plandf, on = 'sid', how = 'left') # creates empty 'plan_time' & empty 'plans', as not all SIDs are in plandf... 
         print("3. Generating profile features")
-        df0 = gen_profile_feas(df0, profiledf)
+        df0 = gen_profile_feas(df0, profiledf)           # fine
         print("4. Generating plan features")
-        df_with_plans = gen_plan_feas(df0)
+        df_with_plans = gen_plan_feas(df0)               # fine --> SIDs without plan, also get the transmode specific columns, but all with 0/ -1 if there is nothing avaible
         print("5. Unstacking plans into rows")
-        df_plans_pp = unstack_plans(plandf)
+        df_plans_pp = unstack_plans(plandf)              # unstack plans from json to DF
         df_plans_pp, clickdf, df_with_plans = preprocess_datatypes(df_plans_pp, clickdf, df_with_plans)
         df = join_data_sets(df_plans_pp, clickdf, df_with_plans, profiledf, df_mode)
         df = fill_missing_price(df)
@@ -454,7 +472,11 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
     print("7. Split train and test")
     print(str(df.shape[0]), str(df.shape[1]))
     #traindf, testdf = split_train_test_by_col(df)
-    traindf, testdf = split_train_test_by_row(df)
+    if df_mode == 'col':
+        traindf, testdf = split_train_test_by_row(df)
+		
+    if df_mode == 'row':
+        traindf, testdf = split_train_test_by_row2(df)
 
     return (traindf, testdf)
 

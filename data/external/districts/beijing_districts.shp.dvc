@@ -1,0 +1,8 @@
+md5: 3becf08a4d984de6d415d70a9034711d
+wdir: .
+outs:
+- md5: 6ab8352fb932355b86ea5abde51a4f17
+  path: beijing_districts.shp
+  cache: true
+  metric: false
+  persist: false

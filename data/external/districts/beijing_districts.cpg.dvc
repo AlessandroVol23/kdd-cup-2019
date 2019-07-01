@@ -1,0 +1,8 @@
+md5: 205fffc0e713001df8f4da6adce9bfa3
+wdir: .
+outs:
+- md5: 0e4bb4efc30ec129e5003a18ea2103cf
+  path: beijing_districts.cpg
+  cache: true
+  metric: false
+  persist: false
