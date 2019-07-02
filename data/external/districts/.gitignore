@@ -1,0 +1,13 @@
+/ax_beijing_districts_testdata.png
+/ax_beijing_districts_traindata.png
+/beijing_districts.cpg
+/beijing_districts.dbf
+/beijing_districts.shp
+/beijing_districts.shx
+/beijing_districts.csv
+
+*.txt
+*.csv
+*.pickle
+
+!*.dvc
