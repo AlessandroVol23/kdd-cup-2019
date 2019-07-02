@@ -15,6 +15,7 @@ if os.getcwd()[-12:] != "kdd-cup-2019":
 			[1] either WD isn't set correctly to 'kdd-cup-2019' \n \
 			[2] or WD was renamed")
 
+
 # Load the multiclass Traindata & extract the "sid"-Column:
 train_set = pd.read_pickle("data/processed/multiclass/train_all_first.pickle")
 all_sids  = train_set["sid"]
@@ -38,8 +39,8 @@ def slice_to_evely_sized_chunks(k):
 		raise ValueError("k can not divide the SIDs into evely sized chunks")
 		
 	# Check whether the folder to save the results is existent:
-	if not os.path.isdir("data/processed/Test_Train_Splits/" + str(k) + "-fold"):
-		raise ValueError("There is no " + str(k) + "-fold Folder in data/processed/Test_Train_Splits/")
+	if not os.path.isdir("data/processed/split_test_train/" + str(k) + "-fold"):
+		raise ValueError("There is no " + str(k) + "-fold Folder in data/processed/split_test_train/")
 	
 	# Define List to save SIDs for each fold
 	SIDs = []
@@ -49,7 +50,7 @@ def slice_to_evely_sized_chunks(k):
 		SIDs.append(sampled_ids[int(fold * sample_sizes) : int((fold + 1) * sample_sizes)])
 
 	# Save the Results as Single pickle File:
-	with open("data/processed/Test_Train_Splits/" + str(k) + "-fold/SIDs.pickle", "wb") as fp:
+	with open("data/processed/split_test_train/" + str(k) + "-fold/SIDs.pickle", "wb") as fp:
 		pickle.dump(SIDs, fp)
 
 

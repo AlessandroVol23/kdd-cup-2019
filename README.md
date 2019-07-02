@@ -139,6 +139,7 @@ Project Organization
     │   ├── __init__.py    <- Makes src a Python module
     │   │
     │   ├── data           <- Scripts to download data or generate data
+    │   │                     [e.g. SIDs splitting for CrossValidation]
     │   │
     │   ├── evaluator      <- Script to get the F1 Score of a Submission File
     │   │

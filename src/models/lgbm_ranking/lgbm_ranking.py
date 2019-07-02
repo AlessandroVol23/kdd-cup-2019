@@ -115,7 +115,11 @@ def get_max_from_diff(array, array_from, array_to):
     array_diff = np.array(array[array_from:array_to])
 
     return array_diff[np.argmax(array_diff)]
-
+"""
+array = y_all_transport_mode
+array_from = int(start)
+array_to   = int(end)
+"""
 def get_max_from_diff_index(array, array_from, array_to):
     """
     Get the index of the maximum value of an array within a certain interval
@@ -136,6 +140,11 @@ def get_max_from_diff_index(array, array_from, array_to):
         
     return np.argmax(array_diff)
 
+"""
+x = curr_test_set
+y_all_transport_mode = predicted_scores
+query_array = query_test
+"""
 def create_y_best_transport_mode(x, y_all_transport_mode, query_array):
     """
     Given the data used for the LGBM to calcualte the Scores of the single 
@@ -312,7 +321,7 @@ def cv_lgbm_ranking(data, features, CV, folder):
 		train_features = curr_train_set[features]
 		train_response = curr_train_set["target"]
 		test_features  = curr_test_set[features]
-		test_response  = curr_test_set[curr_test_set["target"] != 0]["click_mode"].values
+		test_response  = curr_test_set.drop_duplicates("sid").click_mode
 	    
 	    # set the parameters for the LGBM-Ranking Model
 		print("Configure Parameters \n")
@@ -324,18 +333,18 @@ def cv_lgbm_ranking(data, features, CV, folder):
 	    # Transform the TrainData into an LGBM-Dataset & Train the LGBM Model
 		print("Fit LightGBM Model \n")
 		lgb_train = lgb.Dataset(train_features, train_response, group = query_train)
-		gbm       = lgb.train(params, lgb_train, verbose_eval = 1)
+		gbm       = lgb.train(params, lgb_train)
 	    
 	    # predict the Scores for each TransMode in the TestSet
 		print("LightGBM prediction on testset \n")
-		predicted_scores = gbm.predict(test_features, verbose_eval = 1)
+		predicted_scores = gbm.predict(test_features)
 		
 		# Based on the predicted Scores for each TransportMode, extract the 
 		# predicted class, we need for.
 		predicted_classes = create_y_best_transport_mode(curr_test_set,
 												         predicted_scores, 
 														 query_test)
-		
+
 		# Add Scores to the corresponding lists:
 		F1.append(sklearn.metrics.f1_score(test_response, 
 									       predicted_classes["y"],
@@ -407,7 +416,6 @@ def cv_lgbm_ranking(data, features, CV, folder):
 			
 	pd_res.to_csv("models/ranking/lgbm/" + str(folder) + "/Summary" + str(numb) + ".csv")
 
-
 #%% Run the CV
 if __name__ == "__main__":
 	
@@ -418,12 +426,18 @@ if __name__ == "__main__":
 		
 	feature_names.append("transport_mode")
 	
-	with open("data/processed/Test_Train_Splits/5-fold/SIDs.pickle", "rb") as fp:
+	with open("data/processed/split_test_train/5-fold/SIDs.pickle", "rb") as fp:
 		CV = pickle.load(fp)
 	
-	data       = load_data("data/processed/Ranking/train_raw_row.pickle")
+	data       = load_data("data/processed/Ranking/train_all_row.pickle")
+	
+	# TO BE DELETED
+	data_ = pd.read_pickle("C:/Users/kuche_000/Desktop/train_all_processed.pickle")
+	data_  = data_.sort_values("sid")
+	data_  = data_.reset_index(drop = True)
+	data = data_.head(1000)
 	
 	cv_lgbm_ranking(data     = data, 
 				    features = feature_names, 
-				    CV       = CV, 
+				    CV       = CV,
 				    folder   = "1")

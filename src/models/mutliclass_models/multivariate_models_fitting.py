@@ -40,7 +40,7 @@ DF_new_train = pd.read_pickle("data/processed/multiclass/train_all_first.pickle"
 DF_new_test  = pd.read_pickle("data/processed/multiclass/test_all_first.pickle")
 
 # [2] Load SessionIDs for reproducible k-fold-CV ------------------------------
-with open("data/processed/Test_Train_Splits/5-fold/SIDs.pickle", "rb") as fp:
+with open("data/processed/split_test_train/5-fold/SIDs.pickle", "rb") as fp:
 	SIDs = pickle.load(fp)	 
 	
 # [3] Load FeatureNames -------------------------------------------------------
@@ -258,7 +258,7 @@ def get_cv_and_modells(data, features, model, CV, scaled, folder, model_type):
 	pd_res.to_csv("models/Multivariate Approach/" + str(folder) + "/Summary" + str(numb) + ".csv")
 	
 	"""
-	Commentet out, as it takes a lot of memory which leads to errors in the VM....
+	Commented out, as it takes a lot of memory which leads to errors in the VM....
 	# [4] Train the final model [on all train data] and save it:
 	print("train the final model")
 	model.fit(data.loc[:, features], data["Response"])
@@ -268,6 +268,7 @@ def get_cv_and_modells(data, features, model, CV, scaled, folder, model_type):
 	"""
 
 """
+Example of Usage:
 get_cv_and_modells(data = df_train_merged.iloc[:1000], 
 				   features = ['req_evening', 'is_holiday', 'max_temp'], 
 				   model =  MLPClassifier(hidden_layer_sizes=(2, 2, 3)), 
@@ -276,128 +277,22 @@ get_cv_and_modells(data = df_train_merged.iloc[:1000],
 				   folder ='Preprocessed_Raw_PID_20_SVD/TEST', 
 				   model_type = "NeuralNet")
 """
-
-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
-# [2] Get Predicitons for the Test_Set File ready to submitt on Baiduu
-def get_subfile(model, train_data, test_data, features, scaled, fitted):
-	"""
-	Function to to get the submission file for a model, doing predictons
-	on the test_data and is learned on "train_data"
-	Return a 'pandas'-DF of Form:      SID | Prediction
-	                                   123 |     2
-									   321 |     9
-									 
-	 Args:
-		 - model (sklearn)      :  model for multiclass-prediciton, we want to
-		                           train on the trainset and do predicitons on
-								   the testset.
-								   need methods ".fit", ".predict" & ".get_params"
-								   pass the model with the params set already.
-								   e.g.:
-							       model = MLPClassifier(hidden_layer_sizes=(1, 2, 3))
-
-	     - train_data (pandas)  : The DF we use for Training, must contain
-		                          column "Response" & all the columnnames in 
-								  'features'
-								 
-		 - test_data (pandas)  : The DF we want to do predicitons on.
-		                         Must contain all all the columnnames in 
-								 'features' and a Column called "sid"
-								 
-		 - features (list)     : list of strings, with the names of the features
-		                         we want to use for modelling
-		
-		- scaled (boolean)     : Shall the feature values be scaled?
-		
-		- fitted (boolean)     : Was the model fitted already?
-								 No need to retrain then!
-		
-	 Return:
-		 (pandas)-DF in the correct layout for submission  [needs to be saved only]
-	"""
-	# [1] Check Inputs:
-	# [1-1] Data contains "Respond", "sid" & all names passed in 'features'
-	for _feat in features:
-		if _feat not in train_data.columns.values:
-			raise ValueError(_feat + "is not a columname in train_data")
-			
-	if "Response" not in train_data.columns.values:
-		raise ValueError("train_data needs a 'Response' Column") 
-		
-	if "sid" not in train_data.columns.values:
-		raise ValueError("train_data needs a 'sid' Column")  
-		
-	for _feat in features:
-		if _feat not in test_data.columns.values:
-			raise ValueError(_feat + "is not a columname in test_data")
-			
-	if "sid" not in test_data.columns.values:
-		raise ValueError("test_data needs a 'sid' Column") 
-	
-	# [1-2] Check whether the model has the methods needed:
-	if not hasattr(model, 'fit'): 
-		raise ValueError("model has no 'fit'-method")
-		
-	if not hasattr(model, 'predict'): 
-		raise ValueError("model has no 'predict'-method")
-	
-	print("Start creating submission file")
-	# [2] Create Subfile
-	# [2-1] Scale the data if wanted:
-	if scaled:
-		scaler = StandardScaler()
-		
-		scaler.fit(train_data[features])
-		train_data[features] = scaler.transform(train_data[features])
-		
-		scaler.fit(test_data[features])
-		test_data[features] = scaler.transform(test_data[features])
-
-	# [2-2] Fit the model, if the passed model wasn't fit yet:
-	if not fitted:
-		model.fit(train_data[features], train_data["Response"])
-	
-	# [2-3] Get predicitions of the fitted model
-	y_preds = model.predict(test_data[features])
-	
-	# [2-4] transform it into a pandas DF in the correct layout
-	_SID_         = pd.Series(test_data["sid"])
-	_predicitons_ = pd.Series(y_preds)
-	
-	submission = pd.DataFrame(data={'sid':_SID_.values, 'yhat':_predicitons_.values})
-	
-	print("submission file created")
-	return submission
-
-"""
-Example:
-subfile = get_subfile(model      = MLPClassifier(hidden_layer_sizes=(2, 2, 3)), 
-					  train_data = df_train.iloc[:1000], 
-				      test_data  = df_test.iloc[:1000], 
-				      features   = ['max_temp', 'min_temp', 'wind'], 
-				      scaled     = False,
-					  fitted     = False)
-
-# fitted can also be loaded and "fitted" can be set to "True" 
-
-subfile.to_csv("submissions/TEST_SUBMISSION.csv", index = None, header = None)
-"""
-
 #%% Start creating Modells: 
 """
 Select a model and set its parameters and pass it to "get_cv_and_modells" to
 get its CV-Scores, its submodells and a final model trained on all train pts!
 """
-
 if __name__ == '__main__':
 	
 	for k in [5, 10, 15, 50, 100, 200, 500, 1000]:
 		print("Current k: " + str(k))
 		
+		
+		# Here any other sklearn Multiclass Classifier can be inserted!
 		knn_curr = sklearn.neighbors.KNeighborsClassifier(n_neighbors = k,
 													n_jobs = 10)
 		
-		get_cv_and_modells(data       = df_train_merged, 
+		get_cv_and_modells(data       = DF_new_train, 
 				           features   = feature_names,
 				           model      = knn_curr, 
 						   CV         = SIDs, 

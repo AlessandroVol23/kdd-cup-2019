@@ -20,7 +20,7 @@ if "kdd-cup-2019" not in ''.join(list(os.getcwd())[-12:]):
 
 #%% Load the SIDs for CV
 print("load the splits needed for CV")
-with open("data/processed/Test_Train_Splits/5-fold/SIDs.pickle", "rb") as fp:
+with open("data/processed/split_test_trains/5-fold/SIDs.pickle", "rb") as fp:
 	SIDs = pickle.load(fp)	 
 
 #%% Define Functions 
