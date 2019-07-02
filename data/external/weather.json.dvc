@@ -1,0 +1,8 @@
+md5: 887118cf87583bc2883ccdbec8478d6d
+outs:
+- cache: true
+  md5: faaa0c5dce2cc14624cf15856598aac3
+  metric: false
+  path: data/external/weather.json
+  persist: false
+wdir: ../..

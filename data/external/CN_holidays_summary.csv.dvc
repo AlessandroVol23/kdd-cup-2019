@@ -1,0 +1,8 @@
+md5: 44b95e131406f25c23aa07de757df56f
+outs:
+- cache: true
+  md5: 7c987dad98ff19302918e21396216871
+  metric: false
+  path: data/external/CN_holidays_summary.csv
+  persist: false
+wdir: ../..
