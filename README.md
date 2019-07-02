@@ -34,95 +34,25 @@ This adds the external features:
 python ./src/features/add_external.py
 ```
 
-# Models
+# Fitting Models
+All Scripts to fit Models are in "src/models". 
+Corresponding subfolders contain the script to fit the corresponding model. 
+All Scripts are documented, please look into the files itself to see how to run it!
+Basically they have the following structure:
+    [1] Load Packages
+    [2] Define Functions
+    [3] main() --> call all Functions!
 
-## How to save a model?
-
-```python
-# Add sys to sys path to import custom modules from source
-import sys
-sys.path.append("../src/")
-```
-
-### Import custom function save model
-```python
-from src.models.utils import save_model
-save_model(lgb_model, "../models/test_model.pickle")
-```
-__Be careful! The path varies of course.__
-
-
-### Light GBM Multiclass Baseline Model
-
-The model is saved in `models/lgbmodel_2k.pickle`. You can load it with (if it is in DVC again):
-
-```python
-# Add sys to sys path to import custom modules from source
-import sys
-sys.path.append("../src/")
-
-# Import custom function load_model
-from src.models.utils import load_model
-lgb_model = load_model("../models/lgbmodel_2k.pickle")
-```
-You can execute the script to train a model: 
-There is a conda environment in `environments/lgb_baseline.yml`
-
-The script command is: (from repo root) 
-```bash
- python src/models/lgbm_multiclass_baseline/lgbm_mc_bl.py <PATH_TRAIN_FILE> <PATH_TEST_FILE> <PATH_FEATURE_LIST> <NAME> <SAMPLE_MODE> <SAMPLE_AMOUNT>
-```
-
-You can enter max six different sample modes. Feature list is just a pickle file which is a python list with all feature names to take from train and test file.
-
-## README for the Stacking:
-
-#### OBACHT
-Script is not completly ready to run, will be finished by Denny ASAP
-
-
-#### Function is in src/models/stacking and called "fit_stacking_model"
-
-Args:
- - datafolder (string) : 
-   folder, that holds all modelpredicitons (from other models) we want to use as feas to do predicitons on e.g. "models/Multivariate Approach/merged_dfs/knn"
-   Assumptions to the DFs: DF with layout for multiclass learning 
-                           DF shall contain   a "Respond" Column,
-                                              a "sid"     Column,
-                                          &   all 'features_stack'
-                          features_stack in this case are the predictions of
-                          the submodells the stacked model builds on!
-
-            --> Upcoming in the next version (hopefully)
-                removing the CV Argument and assume a "fold" column
-                        in the dataframes in the datafolder
-        
- - model (sklearn) : model, that we use as stacked model [multiclass model!] must have: 'predict' & 'fit method'
-                     e.g. sklearn.ensemble.RandomForestClassifier(criterion = 'entropy', n_estimators = 25,
-                                                                  random_state = 1, n_jobs = 2)
-
- - CV (folder)     : folder that holds the single (pickle)-files with folds used for CV
-                     e.g."data/processed/Test_Train_Splits/5-fold"
-                  
-- add_feas (list) : list of strings, that define, whether additional features shall be used
-                    [need to be in "data/processed/multiclass/with_SVD_20/train_all_first.pickle"-DF]
-                          
-- scaled (boolean) : Shall the features be scaled? 
-
-
-You can execute the script to train a model: 
-There is a conda environment in `environments/lgb_baseline.yml`
-
-The script command is: (from repo root) 
-```bash
- python src/models/lgbm_multiclass_baseline/lgbm_mc_bl.py <PATH_TRAIN_FILE> <PATH_TEST_FILE> <PATH_FEATURE_LIST> <NAME> <SAMPLE_MODE> <SAMPLE_AMOUNT>
-```
-
-You can enter max six different sample modes. Feature list is just a pickle file which is a python list with all feature names to take from train and test file.
-
-## Project description
+# Project description
 
 A short description of the project:
+KDD Cup is with Baiduu (Chinese Google) and their Maps-App.
+Goal (1) is to predict the transportation mode a user is going to click on
+Goal (2) is an open use case on how to use the provided data in a meaningful way 
+
+The Data provided is split into train and testset.
+Basically to each Session [Query of a User on how to get from A -> B] we have a spartial feature [Coordinates of the Origin & Destiny],
+the transportaion mode specific features [distance, time, price] and a User-Specific Personal-ID [63k Categories incl. NAs]
 
 Project Organization
 ------------
@@ -130,54 +60,67 @@ Project Organization
     ├── LICENSE
     ├── .dvc               <- Folder for the Data Version Control
     ├── .git               <- Folder for all the GIT Settings [including more subfolders]
-    ├── Makefile           <- Makefile with commands like `make data` or `make train`
     ├── README.md          <- The top-level README for developers using this project.
     ├── data               <- folder that holds all data used in this project
     │   │   
     │   ├── raw            <- The original, immutable data dump.
-    │   │   └─── data_set_phase1        <- the original, untouched data from phase 1
-    │   │                                  [multiple DFs, that are merged to one big DF (s. 'Processed')]
+    │   │   ├─── data_set_phase1        <- the original, untouched data from phase 1
+    │   │   │                              [multiple DFs, that are merged to one big DF (s. 'Processed')]
+    │   │   │    
+    │   │   └─── data_set_phase1_joined <- raw data that was joined on the Session IDs, so we have all
+    │   │                                  data of single session in a single row 
     │   │
     │   ├── external       <- Data from third party sources, that were not from the KDD-DataCompetition itself
+    │   │   ├─── districts              <- dataframes for districts assignments
+    │   │   │
     │   │   └─── external_features      <- dataframes with external Informations
     │   │                                  [e.g. coordinates of subway stations, national holidays, ...]
-    │   │
-    │   ├── processed      <- The final, canonical data sets for modeling.
+    │   │                       
+    │   ├── processed      <- Final data sets for modeling!
     │   │   ├─── split_test_train       <- SIDs used for splitting the data for CV
     │   │   │                              [has subfolders like: '5fold', '10fold', ... (corresponding to the CV-Tactic)]
-    │   │   ├─── ranking                <- all dataframes that can be used for training Ranking Models [TFRanking, LamdaRank,...]
-    │   │   │       └─── features       <-  different selected features for ranking
-    │   │   │                              [naming convention - date of creation --> easier to track it]
-    │   │   └─── multiclass             <- dataframes to train multiclass classifier
-    │   │           └─── features       <- different selected features for multiclass
-    │   │                                  [naming convention - date of creation --> easier to track it]
+    │   │   │
+    │   │   ├─── features               <- contains "multiclass_1.pickle",..., "multiclass_3.pickle" 
+    │   │   │                              w/ the different feature names, we use for modeling [which features]
+    │   │   │
+    │   │   ├─── ranking                <- all Testing and Training DFs that can be used for Ranking Models 
+    │   │   │                              [TFRanking, LamdaRank,...]
+    │   │   │      
+    │   │   └─── multiclass             <- all Testing and Training DFs that can be used for Multiclass Models
+    │   │                                  [Difference: first_all / last_all --> 
+    │   │                                  sometimes the same transmode is recommenden twice: either keep the first or the last]
     │   │  
     │   └── interim        <- Intermediate data that has been transformed.
     │
-    ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
+    ├── docs               <- Documentationes
     │
-    ├── environments       <- Folder for all different conda environments 
-    │                         e.g. for TFRanking, Light-GBM, Multiclass Approach... [all saved as '.yml' file]
+    ├── environments       <- Folder for all different conda environments [all saved as '.yml' file]
     │    
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
-    │   │                     all folder contain the: - summary files (.csv) [performance measures, settings, feature names ...]
-    │   │                                             - the prediciton files (.csv) [CV-Predicitons used for stacking]
-    │   │                                                      └──> should contain fold, SID, and Predicition Columns
-    │   │                                                                            └──> fold = 1 --> fold 2, 3, 4, 5 were used to train
-    │   │                                                                                              and then predicitons done in fold 1
-    │   │                                             - finalmodel (.pickle) the final model that was trained on all trainpoints
-    │   │                    
-    │   │                     !!! Take care, that summaries, final_model and predicitons do have names !!!
-    │   │                         [e.g. 'pred1', 'finalModel1', 'summary1']
+    ├── models             <- Trained models | model predictions | model summaries
+    │   │                     Structure as follows:
+    │   │                       - 1. FOLDER: Category of the model (mutliclass, ranking, stacking,...)
+    │   │                       - 2. Folder: Name of the feature space we have used (1, 2, 3, ...)
+    │   │                       - 3. folder: Name of the concrete Model (KNN, MLP, XGboost)
+    │   │                                    --> this folder can contain:   - summary files (F1, Confusion Matrix,...)
+    │   │                                                                   - CV_predicitons (Predicted Class Probabilites on CV)
+    │   │                                                                                     [used for stacking]
+    │   │                                                                   - final_mod (model that were trained on all TrainData )
+    │   │                                                                     we use for prediciting on the testset!
+    │   │                                                                     [name corresponds to summary- / CV_predicitons-file!]
     │   │  
-    │   ├── lgb_multi      <- all trained models, CV Predicitons and summaries for the Light-GBM MulticlassApproach
     │   ├── multiclass     <- all trained models, CV Predicitons and summaries for the Multiclass Approaches
+    │   │   ├─── 1         <- all models that were create with features names in data/processed/features/multiclass_1.pickle
+    │   │   │                 [contains subfolders with names of mutliclass learners]
+    │   │
     │   ├── stacking       <- all trained models, CV Predicitons and summaries for the stacked Approach
+    │   │
     │   └── ranking        <- all trained models, CV Predicitons and summaries for the Ranking Approaches
+    │       ├─── 1         <- all models that were create with features names in data/processed/features/multiclass_1.pickle
+    │       │                 [contains subfolders with names of mutliclass learners]
     │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering), the creator's initials
-    │                         and a short `-` delimited description, e.g. `1.0-jqp-initial-data-exploration`.
-    |                         [just explorative & experimental]
+    ├── notebooks          <- Jupyter notebooks [just explorative & experimental]
+    |                         Naming convention: number (for ordering), the creator's initials and a short description!
+    |                         e.g. '0.4-DS-data-exploration'.                         
     |
     ├── submissions        <- submission files as .csv [SID, y_hat]
     |                         naming convention: Name of model & date e.g. 'lamdarank_04_06'
@@ -195,18 +138,21 @@ Project Organization
     ├── src                <- Source code for use in this project.
     │   ├── __init__.py    <- Makes src a Python module
     │   │
-    │   ├── data           <- Scripts to download or generate data
+    │   ├── data           <- Scripts to download data or generate data
     │   │
-    │   ├── features       <- Scripts to add (external) features & to merged_raw_data 
+    │   ├── evaluator      <- Script to get the F1 Score of a Submission File
+    │   │
+    │   ├── features       <- Scripts to add (external) features & raw data 
     │   │   ├── add_features.py
     │   │   └── build_features.py
     │   │
+    │   ├── MLFlow         <- Script to log ModelResults w/ MLFlow
+    │   │
     │   ├── models         <- Scripts to train models and to use trained models to make
     │   │                     predictions [each mpodel type an own subfolder]
-    │   │                     [plus each script needs andescribtion in the README]
+    │   │                     [documentaion see the files itself!]
     │   │
     │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
     │
     └── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
 
