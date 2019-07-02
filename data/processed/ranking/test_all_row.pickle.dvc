@@ -1,8 +1,8 @@
-md5: 6d6b49f33fc2acbcc7186f2b3cb28620
-wdir: .
+md5: 01e344391fc6d5bd162e762417b2cbcd
 outs:
-- md5: 1ffe86107d035c7044879758b1b6df67
-  path: test_all_row.pickle
-  cache: true
+- cache: true
+  md5: 78c2b2560045bab7b541b612e1412f40
   metric: false
+  path: data/processed/ranking/test_all_row.pickle
   persist: false
+wdir: ../../..

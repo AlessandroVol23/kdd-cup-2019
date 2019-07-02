@@ -1,8 +1,8 @@
-md5: 22d942e83e7f0bff282f50d6726c7e85
-wdir: .
+md5: c2bf55e793919fbb954be3c2d6711a1a
 outs:
-- md5: bbe6a6d54496a24f2b1a321b252fa0c3
-  path: train_all_last.pickle
-  cache: true
+- cache: true
+  md5: 299f71396793f93673a39e8893e04b6f
   metric: false
+  path: data/processed/multiclass/train_all_last.pickle
   persist: false
+wdir: ../../..

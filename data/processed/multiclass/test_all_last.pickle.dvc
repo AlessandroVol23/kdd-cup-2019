@@ -1,8 +1,8 @@
-md5: f853ba8978aa240bb0b6871f1edfe265
-wdir: .
+md5: 4d0ca3e4e02b3d9d69c766df865cadeb
 outs:
-- md5: 857f75e058b1c04f04441db3051984f4
-  path: test_all_last.pickle
-  cache: true
+- cache: true
+  md5: 735b349ee35ef1d18c005eddfac62855
   metric: false
+  path: data/processed/multiclass/test_all_last.pickle
   persist: false
+wdir: ../../..
