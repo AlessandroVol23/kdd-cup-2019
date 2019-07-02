@@ -1,0 +1,8 @@
+md5: adc9c14529f1ad0e4243a0da1fcd0e64
+wdir: .
+outs:
+- md5: 46babbb7fe866adcc1a66f312eac8ad9
+  path: train_all_first_districts.pickle
+  cache: true
+  metric: false
+  persist: false
