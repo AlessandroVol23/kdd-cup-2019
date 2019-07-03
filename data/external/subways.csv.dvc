@@ -1,0 +1,8 @@
+md5: e136f06c67748cc5d6ea77b4dc27cb5d
+outs:
+- cache: true
+  md5: f317b168eb997ec3ed9269b49812aa6b
+  metric: false
+  path: data/external/subways.csv
+  persist: false
+wdir: ../..

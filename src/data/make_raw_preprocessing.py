@@ -42,9 +42,9 @@ def read_in_test_data(absolute_raw_data_path):
 
 def write_data(absolute_raw_data_path, df, train_mode, df_mode, plan_mode='col'):
     if df_mode == 'row':
-        filename = 'processed_raw/' + train_mode + '_raw_' + df_mode + '.pickle'
+        filename = 'processed/ranking/' + train_mode + '_raw_' + df_mode + '.pickle'
     else:
-        filename = 'processed_raw/' + train_mode + '_raw_' + plan_mode + '.pickle'
+        filename = 'processed/multiclass/' + train_mode + '_raw_' + plan_mode + '.pickle'
     print("Writing df to pickle in ../data/processed_raw/")
     df.to_pickle(os.path.join(absolute_raw_data_path, filename))
     return
