@@ -1,0 +1,8 @@
+md5: 5c5f34109643c67f26e95b79c20c7fba
+wdir: .
+outs:
+- md5: ebefce14e0978e48ff69a8b0adae5fa9
+  path: assign_districts.pickle
+  cache: true
+  metric: false
+  persist: false

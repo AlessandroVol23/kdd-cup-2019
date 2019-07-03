@@ -1,0 +1,8 @@
+md5: c433e080979b416baa7d17a9369b7f1f
+wdir: .
+outs:
+- md5: e93757a05fcead174800e06c3304ddd7
+  path: beijing_districts.csv
+  cache: true
+  metric: false
+  persist: false

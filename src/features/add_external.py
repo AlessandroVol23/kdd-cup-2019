@@ -1,17 +1,18 @@
-
-import pickle
 import os
 import sys
 import json
-import math
 import logging
+import numpy as np
 import pandas as pd
+import pickle
+import geopandas as gpd
 from shapely.ops import nearest_points
 from shapely.geometry import Point
-import geopandas as gpd
+
 
 # Initialize logger
 logger = logging.getLogger(__name__)
+
 
 def preprocess_coordinates(df):
     '''
@@ -182,6 +183,135 @@ def add_weather_features(dataf, type='req'):
 
     return dataf
 
+
+def assign_districts(df_train):
+    # Euclidean Distance Calculation
+    def dist(a, b, ax=1):
+        return np.linalg.norm(a - b, axis=ax)
+
+    # Get coordinates of all points and generate one single arrays
+    def get_points(df, x, y):
+        f1 = df[x].values
+        f2 = df[y].values
+        point_array = np.array(list(zip(f1, f2)))
+        return point_array
+
+    # Set each district center as centroids and generate one single centroid array
+    def set_centroids(x, y):
+
+        if os.path.isfile("../data/external/districts/beijing_districts.csv"):
+            df_beijing_districts = pd.read_csv("../data/external/districts/beijing_districts.csv")
+        else:
+            sys.exit(-1)
+
+        x1 = df_beijing_districts[x].values
+        y1 = df_beijing_districts[y].values
+        centroids = np.array(list(zip(x1, y1)))
+        return centroids
+
+    # Locate existing column (ex_column) in data frame and add new_column filled with NaN right behind it
+    def preprocess_districts(df, ex_column, new_column):
+        add_after_this_column = df.columns.get_loc(ex_column)
+        new_column_position = add_after_this_column + 1
+
+        df.insert(new_column_position, new_column, np.nan, True)
+        return df
+
+    # Assign each point of points to its closest district by calculating the distance to each value in centroid
+    # Result in column
+    def assign_points(df, column, points, centroids):
+
+        # Cluster array filled with 0
+        clusters = np.zeros(len(points))
+
+        for p in range(len(points)):
+
+            if p % 100 == 0:
+                print("Processing row {}".format(str(p)), end="\r")
+
+            # Calculate distance to all centroids, choose the smallest to assign cluster
+            distances = dist(points[p], centroids)
+            cluster = np.argmin(distances)
+            clusters[p] = cluster
+            df.loc[df.index == p, column] = column + str(cluster)
+
+        return df
+
+    def one_hot(df, column):
+        df = df.join(pd.get_dummies(df[column]))
+        return df
+
+    # Generate one array with districts of unique data frame
+    def get_district(df):
+        array = df['o_district'].values
+        split_array = []
+        districts = []
+
+        for each in array:
+            split = each.split(', ')
+            split_array.append(split)
+
+        for nr in range(len(split_array)):
+            z = split_array[nr][0].split('o_district_')
+
+            if z[1] not in districts:
+                districts.append(z[1])
+
+        districts.sort()
+        return districts
+
+    def calculate_distances(df, points, centroids):
+        # Add new column filled with NaN for each district
+        districts = get_district(df)
+
+        for district in districts:
+            df.loc[:, 'o_distance_' + district] = np.nan
+
+        for p in range(len(points)):
+
+            if p % 100 == 0:
+                print("Processing row {}".format(str(p)), end="\r")
+
+            for i in districts:
+                i = int(i)
+                center = centroids[i]
+
+                distance = dist(P[p], center)
+                df.loc[p, 'o_distance_' + str(i)] = distance
+        return df
+
+    # Getting coordinates of Starting/Destination Points
+    P = get_points(df_train, 'o_lat', 'o_long')
+    Q = get_points(df_train, 'd_lat', 'd_long')
+
+    # Setting Centroids
+    C = set_centroids('o_lat', 'o_long')
+
+    # Add o_district, d_district filled with NaN values after columns o_lat, d_lat
+    df_train = preprocess_districts(df_train, 'o_lat', 'o_district')
+    df_train = preprocess_districts(df_train, 'd_lat', 'd_district')
+
+    # Assigning each point to its closest origin/destination district
+    df_train = assign_points(df_train, 'o_district', P, C)
+    df_train = assign_points(df_train, 'd_district', Q, C)
+
+    # One-Hot-Encoded assigned districts
+    df_train = one_hot(df_train, 'o_district')
+    df_train = one_hot(df_train, 'd_district')
+
+    # Calculate distances to each districts
+    df_train = calculate_distances(df_train, P, C)
+
+    if not os.path.isdir("../data/external"):
+        os.mkdir("../data/external")
+    if not os.path.isdir("../data/external/districts"):
+        os.mkdir("../data/external/districts")
+
+    df_train.to_pickle("../data/external/districts/train_all_first_districts.pickle")
+
+    return df_train
+
+
 def add_features(df):
     print("Adding coordinate features")
     df = preprocess_coordinates(df)
@@ -195,7 +325,10 @@ def add_features(df):
     df = add_public_holidays(df)
     print("Adding weather features")
     df = add_weather_features(df)
+    print("Assign districts")
+    df = assign_districts(df)
     return df
+
 
 def main():
     
@@ -218,6 +351,7 @@ def main():
     '''
     
     return
+
 
 if __name__ == "__main__":
     main()
