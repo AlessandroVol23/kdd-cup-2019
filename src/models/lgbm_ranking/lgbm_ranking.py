@@ -115,11 +115,15 @@ def get_max_from_diff(array, array_from, array_to):
     array_diff = np.array(array[array_from:array_to])
 
     return array_diff[np.argmax(array_diff)]
+
+
 """
 array = y_all_transport_mode
 array_from = int(start)
 array_to   = int(end)
 """
+
+>>>>>>> 4cb25ddb90c211a9539123ebb6b84fe836c1d209
 def get_max_from_diff_index(array, array_from, array_to):
     """
     Get the index of the maximum value of an array within a certain interval
@@ -322,7 +326,7 @@ def cv_lgbm_ranking(data, features, CV, folder):
 		train_response = curr_train_set["target"]
 		test_features  = curr_test_set[features]
 		test_response  = curr_test_set.drop_duplicates("sid").click_mode
-	    
+
 	    # set the parameters for the LGBM-Ranking Model
 		print("Configure Parameters \n")
 		params                  = {}
@@ -415,6 +419,7 @@ def cv_lgbm_ranking(data, features, CV, folder):
 	pd_res = pd.DataFrame([dict_to_pd])
 			
 	pd_res.to_csv("models/ranking/lgbm/" + str(folder) + "/Summary" + str(numb) + ".csv")
+
 
 #%% Run the CV
 if __name__ == "__main__":

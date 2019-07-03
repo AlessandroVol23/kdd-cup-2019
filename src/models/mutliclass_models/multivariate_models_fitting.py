@@ -277,6 +277,7 @@ get_cv_and_modells(data = df_train_merged.iloc[:1000],
 				   folder ='Preprocessed_Raw_PID_20_SVD/TEST', 
 				   model_type = "NeuralNet")
 """
+
 #%% Start creating Modells: 
 """
 Select a model and set its parameters and pass it to "get_cv_and_modells" to
@@ -286,7 +287,6 @@ if __name__ == '__main__':
 	
 	for k in [5, 10, 15, 50, 100, 200, 500, 1000]:
 		print("Current k: " + str(k))
-		
 		
 		# Here any other sklearn Multiclass Classifier can be inserted!
 		knn_curr = sklearn.neighbors.KNeighborsClassifier(n_neighbors = k,

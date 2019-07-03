@@ -15,7 +15,6 @@ if os.getcwd()[-12:] != "kdd-cup-2019":
 			[1] either WD isn't set correctly to 'kdd-cup-2019' \n \
 			[2] or WD was renamed")
 
-
 # Load the multiclass Traindata & extract the "sid"-Column:
 train_set = pd.read_pickle("data/processed/multiclass/train_all_first.pickle")
 all_sids  = train_set["sid"]
@@ -27,6 +26,7 @@ sampled_ids = random.sample(list(all_sids), k = len(all_sids))
 # check whether the sampled_ids have the same length as TrainSet["sid"]:
 if len(set(sampled_ids)) != len(set(all_sids)):
 	raise ValueError("Error, sampled SIDs have less elements than TrainSet has SIDs")
+
 
 def slice_to_evely_sized_chunks(k):
 	"""
@@ -55,4 +55,3 @@ def slice_to_evely_sized_chunks(k):
 
 
 slice_to_evely_sized_chunks(5)
-slice_to_evely_sized_chunks(10)
