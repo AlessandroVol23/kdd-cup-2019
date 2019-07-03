@@ -117,7 +117,7 @@ def raw_preprocessing(df, plandf, profiledf, clickdf=None, df_mode='col', plan_m
             df = pd.merge(df, df_plans, how='outer')
 
         elif df_mode == 'row':
-            df = pd.merge(df_plans, df_queries, on = "sid", how = "outer")
+            df = pd.merge(df_plans, df_queries, on = "sid", how = "left")
             df = pd.merge(df, df_clicks, on = "sid", how = "outer")
             df['click_mode'] = df['click_mode'].fillna(value=0)
             df = pd.merge(df, df_profiles, on = "pid")
