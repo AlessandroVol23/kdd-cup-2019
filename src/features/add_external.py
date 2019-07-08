@@ -146,8 +146,7 @@ def add_dist_nearest_subway(dataf):
 
 
 def add_weather_features(dataf, type='req'):
-    '''
-    This function adds 4 new columns about the weather
+    '''    This function adds 4 new columns about the weather
 
     * maximum temperature in that day
     * minimum temperature in that day
@@ -185,8 +184,12 @@ def add_weather_features(dataf, type='req'):
 
 
 def assign_districts(df_train):
-    # Euclidean Distance Calculation
-    def dist(a, b, ax=1):
+    # Euclidean Distance Calculation for district assignment with ax = 1
+    def dist_districts(a, b, ax=1):
+        return np.linalg.norm(a - b, axis=ax)
+
+    # Euclidean Distance Calculation for distance of each point with ax = 0
+    def dist_distances(a, b, ax=0):
         return np.linalg.norm(a - b, axis=ax)
 
     # Get coordinates of all points and generate one single arrays
@@ -206,6 +209,7 @@ def assign_districts(df_train):
 
         x1 = df_beijing_districts[x].values
         y1 = df_beijing_districts[y].values
+
         centroids = np.array(list(zip(x1, y1)))
         return centroids
 
@@ -227,10 +231,10 @@ def assign_districts(df_train):
         for p in range(len(points)):
 
             if p % 100 == 0:
-                print("Processing row {}".format(str(p)), end="\r")
+                print("District processing row {}".format(str(p)), end="\r")
 
             # Calculate distance to all centroids, choose the smallest to assign cluster
-            distances = dist(points[p], centroids)
+            distances = dist_districts(points[p], centroids)
             cluster = np.argmin(distances)
             clusters[p] = cluster
             df.loc[df.index == p, column] = column + str(cluster)
@@ -270,13 +274,13 @@ def assign_districts(df_train):
         for p in range(len(points)):
 
             if p % 100 == 0:
-                print("Processing row {}".format(str(p)), end="\r")
+                print("Distance processing row {}".format(str(p)), end="\r")
 
             for i in districts:
                 i = int(i)
                 center = centroids[i]
 
-                distance = dist(P[p], center)
+                distance = dist_distances(P[p], center)
                 df.loc[p, 'o_distance_' + str(i)] = distance
         return df
 
@@ -303,11 +307,11 @@ def assign_districts(df_train):
     df_train = calculate_distances(df_train, P, C)
 
     if not os.path.isdir("../data/external"):
-        os.mkdir("../data/external")
+        os.mkdir("data/external")
     if not os.path.isdir("../data/external/districts"):
-        os.mkdir("../data/external/districts")
+        os.mkdir("data/external/districts")
 
-    df_train.to_pickle("../data/external/districts/train_all_first_districts.pickle")
+    df_train.to_pickle("data/external/districts/test.pickle")
 
     return df_train
 
@@ -318,7 +322,7 @@ def add_features(df):
     print("Adding subway features")
     df = add_dist_nearest_subway(df)
     df = pd.DataFrame(df)
-    df = df.drop(['o_long', 'o_lat', 'd_long', 'd_lat'], axis=1)
+    # df = df.drop(['o_long', 'o_lat', 'd_long', 'd_lat'], axis=1)
     print("Adding time features")
     df = time_features(df)
     print("Adding public holidays features")
@@ -327,15 +331,16 @@ def add_features(df):
     df = add_weather_features(df)
     print("Assign districts")
     df = assign_districts(df)
+    print("All features successful")
     return df
 
 
 def main():
-    
-    print("Reading dataframes")
+
+    print("Reading data frames")
     df_train = pd.read_csv("data/raw/train_queries.csv")
     # df_test = pd.read_csv("data/raw/data_set_phase1/test_queries.csv")
-    
+
     print("Adding features in df_train")
     df_train = add_features(df_train)
 
@@ -349,7 +354,7 @@ def main():
     print("Added all features in df_test")
     df_test.to_pickle("data/processed/features/test_external.pickle")
     '''
-    
+
     return
 
 
