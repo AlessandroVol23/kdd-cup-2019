@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import click
 import logging
 import numpy as np
 import pandas as pd
@@ -8,7 +9,6 @@ import pickle
 import geopandas as gpd
 from shapely.ops import nearest_points
 from shapely.geometry import Point
-
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -59,8 +59,8 @@ def time_features(dataf, type='req'):
 
     # [1] Add the Hour, the Day and the Month of the time type
     dataf[type + '_date'] = dataf[type + '_time'].dt.strftime('%m-%d')
-    #dataf[[type + '_month',type + '_day']] = dataf[type + '_date'].str.split("-",expand=True,).astype(int)
-    #dataf = dataf.drop(type + '_date', axis=1)
+    # dataf[[type + '_month',type + '_day']] = dataf[type + '_date'].str.split("-",expand=True,).astype(int)
+    # dataf = dataf.drop(type + '_date', axis=1)
     dataf[type + '_hour'] = dataf[type + '_time'].dt.hour
 
     # [2] Add a Binary, indicating whether its weekend or not! [ERROR]
@@ -75,8 +75,8 @@ def time_features(dataf, type='req'):
     dataf[type + '_evening'] = dataf[type +
                                      '_hour'].apply(lambda x: 1 if x > 18 else 0)
 
-   # Print some Info
-   # logger.debug('5 new columns created: month, day, weekend, hour, and hour_bin')
+    # Print some Info
+    # logger.debug('5 new columns created: month, day, weekend, hour, and hour_bin')
 
     return dataf
 
@@ -106,6 +106,7 @@ def add_dist_nearest_subway(dataf):
     '''
     Creates 1 new column with the distance to the nearest subway station (from subways.csv)
     '''
+
     def extract_Points_df(df, lat_column, long_column, crs={'init', 'epsg:4326'}):
         df_copy = df.copy()
         geometry = [Point(xy) for xy in zip(
@@ -117,7 +118,8 @@ def add_dist_nearest_subway(dataf):
         "data/external/subways.csv", index_col=False).round(2)
 
     if 'o_lat' not in dataf or 'o_long' not in dataf:
-        logger.error("The dataframe doesn't have the coordinates in the correct format. They need to be 'o_lat' and 'o_long'.")
+        logger.error(
+            "The dataframe doesn't have the coordinates in the correct format. They need to be 'o_lat' and 'o_long'.")
 
     gdf_subways = extract_Points_df(
         df_subways, lat_column="o_lat", long_column="o_long")
@@ -133,7 +135,7 @@ def add_dist_nearest_subway(dataf):
         near.i += 1
         # find the nearest point and return the corresponding Place value
         nearest = gdf_subways.geometry == nearest_points(point, pts)[1]
-        return "%.3f" % (gdf_subways[nearest].geometry.get_values()[0].distance(point)*10.0)
+        return "%.3f" % (gdf_subways[nearest].geometry.get_values()[0].distance(point) * 10.0)
 
     near.i = 0
     gdf_dataf['dist_nearest_sub'] = gdf_dataf.apply(lambda row: near(row.geometry, pts3), axis=1)
@@ -183,7 +185,7 @@ def add_weather_features(dataf, type='req'):
     return dataf
 
 
-def assign_districts(df_train):
+def assign_districts(absolute_path_data_folder, df_train):
     # Euclidean Distance Calculation for district assignment with ax = 1
     def dist_districts(a, b, ax=1):
         return np.linalg.norm(a - b, axis=ax)
@@ -202,10 +204,8 @@ def assign_districts(df_train):
     # Set each district center as centroids and generate one single centroid array
     def set_centroids(x, y):
 
-        if os.path.isfile("../data/external/districts/beijing_districts.csv"):
-            df_beijing_districts = pd.read_csv("../data/external/districts/beijing_districts.csv")
-        else:
-            sys.exit(-1)
+        df_beijing_districts = pd.read_csv(
+            os.path.join(absolute_path_data_folder, "external/districts/beijing_districts.csv"))
 
         x1 = df_beijing_districts[x].values
         y1 = df_beijing_districts[y].values
@@ -256,7 +256,13 @@ def assign_districts(df_train):
             split_array.append(split)
 
         for nr in range(len(split_array)):
-            z = split_array[nr][0].split('o_district_')
+            z = split_array[nr][0].split('o_district')
+
+            if len(z) == 1:
+                continue
+
+            if z[1][0] == "_":
+                z[1] = z[1][1:]
 
             if z[1] not in districts:
                 districts.append(z[1])
@@ -306,23 +312,17 @@ def assign_districts(df_train):
     # Calculate distances to each districts
     df_train = calculate_distances(df_train, P, C)
 
-    if not os.path.isdir("../data/external"):
-        os.mkdir("data/external")
-    if not os.path.isdir("../data/external/districts"):
-        os.mkdir("data/external/districts")
-
     df_train.to_pickle("data/external/districts/test.pickle")
 
     return df_train
 
 
-def add_features(df):
+def add_features(absolute_path_data_folder, df):
     print("Adding coordinate features")
     df = preprocess_coordinates(df)
     print("Adding subway features")
     df = add_dist_nearest_subway(df)
     df = pd.DataFrame(df)
-    # df = df.drop(['o_long', 'o_lat', 'd_long', 'd_lat'], axis=1)
     print("Adding time features")
     df = time_features(df)
     print("Adding public holidays features")
@@ -330,30 +330,22 @@ def add_features(df):
     print("Adding weather features")
     df = add_weather_features(df)
     print("Assign districts")
-    df = assign_districts(df)
+    df = assign_districts(absolute_path_data_folder, df)
     print("All features successful")
     return df
 
 
-def main():
-
+@click.command()
+@click.argument("absolute_path_data_folder")
+def main(absolute_path_data_folder):
     print("Reading data frames")
     df_train = pd.read_csv("data/raw/train_queries.csv")
-    # df_test = pd.read_csv("data/raw/data_set_phase1/test_queries.csv")
 
     print("Adding features in df_train")
-    df_train = add_features(df_train)
+    df_train = add_features(absolute_path_data_folder, df_train)
 
     print("Added all features in df_train")
     df_train.to_pickle("data/processed/features/external.pickle")
-
-    ''' DEPRECATED
-    print("Adding features in df_test")
-    df_test = add_features(df_test)
-
-    print("Added all features in df_test")
-    df_test.to_pickle("data/processed/features/test_external.pickle")
-    '''
 
     return
 
