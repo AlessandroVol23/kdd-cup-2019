@@ -1,0 +1,8 @@
+md5: e9228631549fa0b7465a66293cf51188
+outs:
+- cache: true
+  md5: d37e43d45c63b46d2e473e9a1665c540
+  metric: false
+  path: data/processed/features/external.pickle
+  persist: false
+wdir: ../../..

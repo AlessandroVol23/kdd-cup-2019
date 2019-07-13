@@ -16,7 +16,7 @@ def main():
     for inputdir in inpath:
         visited_files = []
         for pick in os.listdir(inputdir):
-            if os.path.splitext(pick)[1] != '.pickle' or pick in visited_files:
+            if os.path.splitext(pick)[1] != '.pickle' or pick in visited_files or 'all' in pick:
                 continue
             print("Reading: " + pick)
             df = pd.read_pickle(os.path.join(inputdir, pick))
