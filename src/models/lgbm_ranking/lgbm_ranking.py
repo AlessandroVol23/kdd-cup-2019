@@ -424,24 +424,23 @@ def cv_lgbm_ranking(data, features, CV, folder):
 #%% Run the CV
 if __name__ == "__main__":
 	
-	# Load the Data:
 	print("Load the Data\n")
+
+	# what are the feature names being used?
 	with open('data/processed/features/multiclass_1.pickle', 'rb') as ff:
 		feature_names = pickle.load(ff)
 		
 	feature_names.append("transport_mode")
 	
+	# Which CV Tactic
 	with open("data/processed/split_test_train/5-fold/SIDs.pickle", "rb") as fp:
 		CV = pickle.load(fp)
 	
-	data       = load_data("data/processed/Ranking/train_all_row.pickle")
+	# What is the train data
+	data = load_data("data/processed/Ranking/train_all_row.pickle")
 	
-	# TO BE DELETED
-	data_ = pd.read_pickle("C:/Users/kuche_000/Desktop/train_all_processed.pickle")
-	data_  = data_.sort_values("sid")
-	data_  = data_.reset_index(drop = True)
-	data = data_.head(1000)
-	
+
+	# [CrossValidate the Model, for the describtion of the params, please see the function describtion itself]
 	cv_lgbm_ranking(data     = data, 
 				    features = feature_names, 
 				    CV       = CV,
