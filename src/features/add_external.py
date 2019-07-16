@@ -64,19 +64,12 @@ def time_features(dataf, type='req'):
     dataf[type + '_hour'] = dataf[type + '_time'].dt.hour
 
     # [2] Add a Binary, indicating whether its weekend or not! [ERROR]
-    dataf[type + '_weekend'] = dataf[type +
-                                     '_time'].dt.day_name().apply(lambda x: 1 if x in ["Friday", "Saturday"] else 0)
+    dataf[type + '_weekend'] = dataf[type + '_time'].dt.day_name().apply(lambda x: 1 if x in ["Friday", "Saturday"] else 0)
 
     # [3] Add binary, NIGHT / EVENING / DAY Column
-    dataf[type + '_night'] = dataf[type +
-                                   '_hour'].apply(lambda x: 1 if x <= 7 else 0)
-    dataf[type + '_day'] = dataf[type +
-                                 '_hour'].apply(lambda x: 1 if x in range(8, 18) else 0)
-    dataf[type + '_evening'] = dataf[type +
-                                     '_hour'].apply(lambda x: 1 if x > 18 else 0)
-
-    # Print some Info
-    # logger.debug('5 new columns created: month, day, weekend, hour, and hour_bin')
+    dataf[type + '_night'] = dataf[type + '_hour'].apply(lambda x: 1 if x <= 7 else 0)
+    dataf[type + '_day'] = dataf[type + '_hour'].apply(lambda x: 1 if x in range(8, 18) else 0)
+    dataf[type + '_evening'] = dataf[type + '_hour'].apply(lambda x: 1 if x > 18 else 0)
 
     return dataf
 
@@ -94,11 +87,9 @@ def add_public_holidays(dataf):
             logger.error("Can't create 'req_date' column. Make sure to run the `time_features` function first.")
             sys.exit(1)
 
-    dataf['is_holiday'] = dataf['req_date'].apply(
-        lambda x: int(x in df_holidays.values))
+    dataf['is_holiday'] = dataf['req_date'].apply(lambda x: int(x in df_holidays.values))
     dataf.drop('req_date', 1)
-    logger.debug(
-        "Feature added: is_holiday, binary column stating if a date is a holiday or not")
+    logger.debug("Feature added: is_holiday, binary column stating if a date is a holiday or not")
     return dataf
 
 
@@ -114,17 +105,13 @@ def add_dist_nearest_subway(dataf):
         Points = gpd.GeoDataFrame(df_copy, crs=crs, geometry=geometry)
         return Points
 
-    df_subways = pd.read_csv(
-        "data/external/subways.csv", index_col=False).round(2)
+    df_subways = pd.read_csv("data/external/subways.csv", index_col=False).round(2)
 
     if 'o_lat' not in dataf or 'o_long' not in dataf:
-        logger.error(
-            "The dataframe doesn't have the coordinates in the correct format. They need to be 'o_lat' and 'o_long'.")
+        logger.error("The dataframe doesn't have the coordinates in the correct format. They need to be 'o_lat' and 'o_long'.")
 
-    gdf_subways = extract_Points_df(
-        df_subways, lat_column="o_lat", long_column="o_long")
-    gdf_dataf = extract_Points_df(
-        dataf, lat_column="o_lat", long_column="o_long")
+    gdf_subways = extract_Points_df(df_subways, lat_column="o_lat", long_column="o_long")
+    gdf_dataf = extract_Points_df(dataf, lat_column="o_lat", long_column="o_long")
 
     pts3 = gdf_subways.geometry.unary_union
 
@@ -148,7 +135,8 @@ def add_dist_nearest_subway(dataf):
 
 
 def add_weather_features(dataf, type='req'):
-    '''    This function adds 4 new columns about the weather
+    '''
+    This function adds 4 new columns about the weather
 
     * maximum temperature in that day
     * minimum temperature in that day
@@ -204,9 +192,7 @@ def assign_districts(absolute_path_data_folder, df_train):
     # Set each district center as centroids and generate one single centroid array
     def set_centroids(x, y):
 
-        absolutepath = "C:/Users/Lynn Nguyen/PycharmProjects/kdd-cup-2019/data"
-        df_beijing_districts = pd.read_csv(
-            os.path.join(absolutepath, "external/districts/beijing_districts.csv"))
+        df_beijing_districts = pd.read_csv(os.path.join(absolute_path_data_folder, "external/districts/beijing_districts.csv"))
 
         x1 = df_beijing_districts[x].values
         y1 = df_beijing_districts[y].values
@@ -319,20 +305,26 @@ def assign_districts(absolute_path_data_folder, df_train):
 
 
 def add_features(absolute_path_data_folder, df):
+
     print("Adding coordinate features")
     df = preprocess_coordinates(df)
+
     print("Adding subway features")
     df = add_dist_nearest_subway(df)
     df = pd.DataFrame(df)
+
     print("Adding time features")
     df = time_features(df)
+
     print("Adding public holidays features")
     df = add_public_holidays(df)
+
     print("Adding weather features")
     df = add_weather_features(df)
+
     print("Assign districts")
     df = assign_districts(absolute_path_data_folder, df)
-    print("All features successful")
+    
     return df
 
 
@@ -341,7 +333,7 @@ def add_features(absolute_path_data_folder, df):
 def main(absolute_path_data_folder):
     print("Reading data frames")
     df_train = pd.read_csv("data/raw/train_queries.csv")
-    #df_train = df_train.head(100)
+
     print("Adding features in df_train")
     df_train = add_features(absolute_path_data_folder, df_train)
 
