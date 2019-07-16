@@ -204,8 +204,9 @@ def assign_districts(absolute_path_data_folder, df_train):
     # Set each district center as centroids and generate one single centroid array
     def set_centroids(x, y):
 
+        absolutepath = "C:/Users/Lynn Nguyen/PycharmProjects/kdd-cup-2019/data"
         df_beijing_districts = pd.read_csv(
-            os.path.join(absolute_path_data_folder, "external/districts/beijing_districts.csv"))
+            os.path.join(absolutepath, "external/districts/beijing_districts.csv"))
 
         x1 = df_beijing_districts[x].values
         y1 = df_beijing_districts[y].values
@@ -340,7 +341,7 @@ def add_features(absolute_path_data_folder, df):
 def main(absolute_path_data_folder):
     print("Reading data frames")
     df_train = pd.read_csv("data/raw/train_queries.csv")
-
+    #df_train = df_train.head(100)
     print("Adding features in df_train")
     df_train = add_features(absolute_path_data_folder, df_train)
 
