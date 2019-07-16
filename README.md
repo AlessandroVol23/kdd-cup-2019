@@ -30,7 +30,7 @@ This adds the 'raw' features:
 * Unstack of plans
  
 ```shell
-python ./src/data/make_raw_preprocessing.py /path/to/kdd-cup-2019/data 'col' 'first'
+python ./src/data/raw_features.py /path/to/kdd-cup-2019/data 'col' 'first'
 ```
 
 ## [2] External features preprocessing
@@ -42,7 +42,7 @@ This adds the external features on the merged DFs (based on [1]):
 * Weather features
 
 ```shell
-python ./src/features/add_features.py
+python ./src/features/external_features.py /path/to/kdd-cup-2019/data
 ```
 
 ## [3] Split SIDs for k-fold CV
