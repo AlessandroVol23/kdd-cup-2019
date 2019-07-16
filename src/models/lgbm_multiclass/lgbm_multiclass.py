@@ -11,17 +11,11 @@ import pickle
 import sklearn
 from sklearn.metrics import f1_score
 
-
 # Check Working Directory & throw error if wrong:
 if "kdd-cup-2019" not in ''.join(list(os.getcwd())[-12:]):
 	raise ValueError("Either you are running the script from the wrong directory \
 				      and not from '../kdd-cup-2019' or \
 					  you renamed the repository")
-
-#%% Load the SIDs for CV
-print("load the splits needed for CV")
-with open("data/processed/split_test_trains/5-fold/SIDs.pickle", "rb") as fp:
-	SIDs = pickle.load(fp)	 
 
 #%% Define Functions 
 print("Define Functions")
@@ -348,12 +342,21 @@ lgbm_train(df_train = df_train,
 		   upsample_mode_4 = 99, upsample_4_amount = 99, 
 		   upsample_mode_5 = 99, upsample_5_amount = 99)
 """
+print("--- Load the data needed for the CV---\n")
+
+# Which CV Tactic
+with open("data/processed/split_test_trains/5-fold/SIDs.pickle", "rb") as fp:
+	SIDs = pickle.load(fp)	 
+
+# What is the train data
 df_train = pd.read_pickle("data/processed/multiclass/train_all_first.pickle")
 
+# what are the feature names being used?
 with open ("data/processed/features/multiclass_1.pickle", 'rb') as fp:
 	features = pickle.load(fp)
 
-
+# Loop over different ParameterSettings!
+# [for the describtion of the params, please see the function describtion itself]
 for _lr in [0.001, 0.05, 0.1]:
 	for _num_leaves in [10, 25, 50, 100]:
 		

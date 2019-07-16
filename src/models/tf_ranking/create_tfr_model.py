@@ -308,7 +308,7 @@ if __name__ == "__main__":
 	
 	# [1-3] Load the data we use for Training
 	df = pd.read_pickle(_TRAIN_DATA)
-	
+	df = df.head(11000)
 	# [1-4] Check whether the folder to save results in is existent
 	#       if it exists we count number of .csv-files and assign the number
 	if not os.path.isdir("models/ranking/tfr"):

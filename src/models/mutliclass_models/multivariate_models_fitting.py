@@ -33,23 +33,8 @@ if os.getcwd()[-12:] != "kdd-cup-2019":
 			[1] either WD isn't set correctly to 'kdd-cup-2019' \n \
 			[2] or WD was renamed")
 
-#%% Read in Data, the SIDs for CV & Select Features
-print("Load SIDs, FeatureNames, Train- and TestData")
-#  [1] Load Train and TestData ------------------------------------------------
-DF_new_train = pd.read_pickle("data/processed/multiclass/train_all_first.pickle")
-DF_new_test  = pd.read_pickle("data/processed/multiclass/test_all_first.pickle")
-
-# [2] Load SessionIDs for reproducible k-fold-CV ------------------------------
-with open("data/processed/split_test_train/5-fold/SIDs.pickle", "rb") as fp:
-	SIDs = pickle.load(fp)	 
-	
-# [3] Load FeatureNames -------------------------------------------------------
-with open('data/processed/features/multiclass_1.pickle', 'rb') as ff:
-	feature_names = pickle.load(ff)
-	
-print("Features being used: \n" + str(feature_names) + "\n")
 #%% Define Functions for Calculating the CV-Score of a sklearn model & create a 
-#   file for subsmitting a (sklearn) model.
+#   file for subsmitting a (sklearn) model.	
 print("Define functions\n")
 # [1] Function to calculate the CV-Score for a Model, save the results and save
 #     all submodell that were created.
@@ -284,7 +269,28 @@ Select a model and set its parameters and pass it to "get_cv_and_modells" to
 get its CV-Scores, its submodells and a final model trained on all train pts!
 """
 if __name__ == '__main__':
-	
+
+	print("--- Load SIDs, FeatureNames, Train- and TestData ---\n")
+	#  [1] Load Train and TestData
+	DF_new_train = pd.read_pickle("data/processed/multiclass/train_all_first.pickle")
+	DF_new_test  = pd.read_pickle("data/processed/multiclass/test_all_first.pickle")
+
+	# [2] Load SessionIDs for reproducible k-fold-CV
+	with open("data/processed/split_test_train/5-fold/SIDs.pickle", "rb") as fp:
+		SIDs = pickle.load(fp)	 
+		
+	# [3] Load FeatureNames 
+	with open('data/processed/features/multiclass_1.pickle', 'rb') as ff:
+		feature_names = pickle.load(ff)
+		
+	print("Features being used: \n" + str(feature_names) + "\n")
+
+
+	#[4] Loop over different settings for any given model
+	#    [all sklearn models are usable! 
+	#    E.g. - sklearn.ensemble.RandomForestClassifier
+	#         - sklearn.neural_network.MLPClassifier
+	#         - sklearn.neighbors.KNeighborsClassifier,...]
 	for k in [5, 10, 15, 50, 100, 200, 500, 1000]:
 		print("Current k: " + str(k))
 		

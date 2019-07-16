@@ -51,8 +51,7 @@ def extract_summaries(paths, key):
 paths = ["models/Multivariate Approach/1/MLP",
 		 "models/Multivariate Approach/1/KNN", 
 		 "models/Multivariate Approach/1/RF", 
-		 "models/Multivariate Approach/1/XGBoost",
-		 "models/lgb_multi/1"]
+		 "models/Multivariate Approach/1/XGBoost"]
 
 results = extract_summaries(paths = paths, key = "Summary")
 
