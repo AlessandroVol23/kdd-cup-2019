@@ -123,7 +123,7 @@ array_from = int(start)
 array_to   = int(end)
 """
 
->>>>>>> 4cb25ddb90c211a9539123ebb6b84fe836c1d209
+#>>>>>>> 4cb25ddb90c211a9539123ebb6b84fe836c1d209
 def get_max_from_diff_index(array, array_from, array_to):
     """
     Get the index of the maximum value of an array within a certain interval
@@ -330,7 +330,7 @@ def cv_lgbm_ranking(data, features, CV, folder):
 	    # set the parameters for the LGBM-Ranking Model
 		print("Configure Parameters \n")
 		params                  = {}
-		params['learning_rate'] = 0.003
+		params['learning_rate'] = 0.025
 		params['boosting_type'] = 'gbdt'
 		params['objective']     = 'lambdarank'
 	    
@@ -442,6 +442,6 @@ if __name__ == "__main__":
 
 	# [CrossValidate the Model, for the describtion of the params, please see the function describtion itself]
 	cv_lgbm_ranking(data     = data, 
-				    features = feature_names, 
+				    features = feature_names,
 				    CV       = CV,
 				    folder   = "1")
