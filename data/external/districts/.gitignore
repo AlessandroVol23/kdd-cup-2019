@@ -11,3 +11,4 @@
 *.pickle
 
 !*.dvc
+/train_all_first_final.pickle
