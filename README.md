@@ -1,23 +1,34 @@
-kdd-cup-2019
+kkdd-cup-2019
 ==============================
-This is the repository for the Big Data Science practical course @ LMU.
+This is the repository for the Big Data Science practical course @ LMU. The aim of the course was to attend at the KDD Cup this year which was hosted from Baidu.
 
 # Project description
 
 A short description of the project:
-This year's KDD Cup is in cooperation with Baiduu. Baiduu is an chinese search engine (comparable to Google) and also offer an Maps-Service.
+This year's KDD Cup is in cooperation with Baidu. Baidu is a chinese search engine (comparable to Google) and also offers a Maps-Service.
 The Challenge has 2 tasks in total:
-[1] for querys on baiduu maps, we shall model the relevance of the different offered transportation modes and predict the one, that the user will click on!
+[1] for queries on Baidu maps, we shall model the relevance of the different offered transportation modes and predict the one, that the user will click on!
 [2] is an open use case on how to use the provided data in a meaningful way! 
 
-The Data provided is already split into train and testset.
-Basically to each Session [Query of a User on how to get from A -> B] we have a spartial feature [Coordinates of the Origin & Destiny],
-the transportaion mode specific features [distance, time, price] and a User-Specific Personal-ID [63k Categories incl. NAs]
+The Data provided is already split into train and test set.
+Basically to each Session [Query of a User on how to get from A -> B] we have a spatial feature [Coordinates of the Origin & Destiny],
+the transportaion mode specific features [distance, time, price] and user specific personal IDs [63k categories incl. NAs]
 
-# Order of Scripts
+__Small note on data__:
+
+Since, we've hosted all datasets on an internal DVC (data version control) system you have to download first all datasets and then execute the preprocessing scripts to get all datasets. Put all the raw user data into `data/raw`.
+You can find all data sources here:
+
+__Data Sources__:
+* User data: https://dianshi.baidu.com/competition/29
+* Weather: https://github.com/yaoxuefeng6/Paddle_baseline_KDD2019
+* Holidays: https://publicholidays.cn/2018-dates/
+* Subway stations: https://en.wikipedia.org/wiki/List_of_Beijing_Subway_stations
+
+# Preprocessing 
 
 ## [1] Raw preprocessing
-For the initial raw preprocessing with features (no external), run this file in `../kdd-cup-2019`. 
+For the initial raw preprocessing, run the file `src/data/raw_features`. 
 This will merge all 4 different raw DFs to a single one and will extract the first basic features!
 
 * Choose `row` or `col` depending on what model you want to train [multiclass approach | ranking approach]
@@ -29,8 +40,8 @@ This adds the 'raw' features:
 * Targets
 * Unstack of plans
  
-```shell
-python ./src/data/raw_features.py /path/to/kdd-cup-2019/data 'col' 'first'
+``` bash
+python ./src/data/raw_features.py <PATH_TO_KDD_CUP_2019/DATA> 'col' 'first'
 ```
 
 ## [2] External features preprocessing
