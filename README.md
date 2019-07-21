@@ -1,4 +1,4 @@
-kkdd-cup-2019
+kdd-cup-2019
 ==============================
 This is the repository for the Big Data Science practical course @ LMU. The aim of the course was to attend at the KDD Cup this year which was hosted from Baidu.
 
