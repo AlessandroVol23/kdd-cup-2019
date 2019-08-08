@@ -1,6 +1,6 @@
 kdd-cup-2019
 ==============================
-This is the repository for the Big Data Science practical course @ LMU. The aim of the course was to attend at the KDD Cup this year which was hosted from Baidu.
+This is the repository for the Big Data Science practical course @ LMU. The aim of the course was to attend at the KDD Cup this year which was hosted from Baidu. We were team __Los Bocadillos__ and could achieve rank 149 / 1.696 with a F1 score of 69.43 % (c.f. 1st place 70.42 %).
 
 # Project description
 
