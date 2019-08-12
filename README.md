@@ -14,7 +14,7 @@ The Data provided is already split into train and test set.
 Basically to each Session [Query of a User on how to get from A -> B] we have a spatial feature [Coordinates of the Origin & Destiny],
 the transportaion mode specific features [distance, time, price] and user specific personal IDs [63k categories incl. NAs]
 
-__Small note on data__:
+__Small note on the data__:
 
 Since, we've hosted all datasets on an internal DVC (data version control) system you have to download first all datasets and then execute the preprocessing scripts to get all datasets. Put all the raw user data into `data/raw`.
 You can find all data sources here:
